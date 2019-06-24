@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickReach.ECommerce.Infra.Data;
 
 namespace QuickReach.ECommerce.Infra.Data.Migrations
 {
     [DbContext(typeof(ECommerceDbContext))]
-    partial class ECommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190624081933_Add supplier context and configuration")]
+    partial class Addsuppliercontextandconfiguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,27 +69,6 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
                     b.HasIndex("CategoryID");
 
                     b.ToTable("Product");
-                });
-
-            modelBuilder.Entity("QuickReach.ECommerce.Domain.Models.Supplier", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(255);
-
-                    b.Property<bool>("IsActive");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(40);
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Supplier");
                 });
 
             modelBuilder.Entity("QuickReach.ECommerce.Domain.Models.Product", b =>
