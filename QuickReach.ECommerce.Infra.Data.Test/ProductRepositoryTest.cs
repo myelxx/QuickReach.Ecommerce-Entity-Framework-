@@ -6,6 +6,9 @@ using System.Text;
 using Xunit;
 using System.Collections;
 using System.Linq;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore.InMemory.Storage.Internal;
+using Microsoft.EntityFrameworkCore;
 
 namespace QuickReach.ECommerce.Infra.Data.Test
 {
@@ -16,36 +19,66 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Create_WithValidEntity_ShouldCreateNewDatabaseRecord()
         {
             //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
 
-            //create new category for foreign key
-            var categoryRepo = new CategoryRepository(context);
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
+
+            //create category for foreign key
             var category = new Category
             {
                 Name = "Shoes",
-                Description = "Shoes Department"
+                Description = "Shoe department"
             };
-            categoryRepo.Create(category);
 
-            var product = new Product
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
+                context.Categories.Add(category);
+                context.SaveChanges();
+            }
+
+            //create product
+            var expected = new Product
             {
                 Name = "Boots",
-                Description = "Boots for sale",
-                Price = 522,
+                Description = "Boots for sell",
+                Price = 1500,
                 CategoryID = category.ID,
-                ImgURL = "sample.png"
+                ImgURL = "sample_boots_1.png"
             };
 
-            //Act
-            sut.Create(product);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            //Assert
-            Assert.True(product.ID != 0);
+                var sut = new ProductRepository(context);
 
-            //Cleanup
-            sut.Delete(product.ID);
-            categoryRepo.Delete(category.ID);
+                //Act
+                sut.Create(expected);
+            }
+
+            using(var context = new ECommerceDbContext(options))
+            {
+                var actual = context.Products.Find(expected.ID);
+
+                //Assert
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+                Assert.Equal(expected.Price, actual.Price);
+                Assert.Equal(expected.CategoryID, actual.CategoryID);
+                Assert.Equal(expected.ImgURL, actual.ImgURL);
+            }
         }
         #endregion
 
@@ -54,37 +87,54 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
             //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                        .Options;
 
-            //create new category for foreign key
-            var categoryRepo = new CategoryRepository(context);
+            //create category for foreign key
             var category = new Category
             {
                 Name = "Shoes",
-                Description = "Shoes Department"
+                Description = "Shoe department"
             };
-            categoryRepo.Create(category);
 
-            var product = new Product
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Categories.Add(category);
+                context.SaveChanges();
+            }
+
+            //create product
+            var expected = new Product
             {
                 Name = "Boots",
-                Description = "Boots for sale",
-                Price = 522,
+                Description = "Boots for sell",
+                Price = 1500,
                 CategoryID = category.ID,
-                ImgURL = "sample.png"
+                ImgURL = "sample_boots_1.png"
             };
-            sut.Create(product);
 
-            //Act
-            var actual = sut.Retrieve(product.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Products.Add(expected);
+                context.SaveChanges();
+            }
 
-            //Assert
-            Assert.NotNull(actual);
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new ProductRepository(context);
 
-            //Cleanup
-            sut.Delete(product.ID);
-            categoryRepo.Delete(category.ID);
+                // Act
+                var actual = sut.Retrieve(expected.ID);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+                Assert.Equal(expected.Price, actual.Price);
+                Assert.Equal(expected.CategoryID, actual.CategoryID);
+                Assert.Equal(expected.ImgURL, actual.ImgURL);
+            }
         }
         #endregion
 
@@ -92,15 +142,21 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithRetrieve_WithNonExistingEntityID_ReturnsNull()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                        .Options;
 
-            //Act
-            var actual = sut.Retrieve(0);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var sut = new ProductRepository(context);
 
-            //Assert
-            Assert.Null(actual);
+                // Act
+                var actual = sut.Retrieve(0);
+
+                // Assert
+                Assert.Null(actual);
+            }
         }
         #endregion
 
@@ -108,92 +164,127 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                 .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                 .Options;
 
-            //create new category for foreign key
-            var categoryRepo = new CategoryRepository(context);
+            //create category for foreign key
             var category = new Category
             {
                 Name = "Shoes",
-                Description = "Shoes Department"
+                Description = "Shoe department"
             };
-            categoryRepo.Create(category);
 
-            for (var i = 1; i <= 20; i += 1)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Create(new Product
+                context.Categories.Add(category);
+                context.SaveChanges();
+            }
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                for (var i = 1; i <= 20; i += 1)
                 {
-                    Name = string.Format("Product {0}", i),
-                    Description = string.Format("Description {0}", i),
-                    Price = 500 + i,
-                    CategoryID = category.ID,
-                    ImgURL = string.Format("img_url_sample_{0}.png", i)
-                });
+                    //create product
+                    context.Products.Add(new Product
+                    {
+                        Name = string.Format("Product {0}", i),
+                        Description = string.Format("Description {0}", i),
+                        Price = 1500 + i,
+                        CategoryID = category.ID,
+                        ImgURL = string.Format("sample_product_{0}.png", i)
+                    });
+                }
+                context.SaveChanges();
+
             }
-
-            //Act
-            var list = sut.Retrieve(5, 5);
-
-            //Assert
-            Assert.True(list.Count() == 5);
-
-            //Cleanup
-            //list = sut.Retrieve(0, Int32.MaxValue);
-            list = sut.Retrieve().ToList();
-            foreach (var entity in list)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Delete(entity.ID);
+                var sut = new ProductRepository(context);
+
+                // Act & Assert
+                var list = sut.Retrieve(5, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(0, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(10, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(15, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(20, 5);
+                Assert.True(list.Count() == 0);
             }
-            categoryRepo.Delete(category.ID);
-        } 
+        }
         #endregion
 
         #region Update
         [Fact]
         public void Update_WithValidEntity_ShouldReflectChangesInDatabaseRecord()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+               .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+               .Options;
 
-            //create new category for foreign key
-            var categoryRepo = new CategoryRepository(context);
+            //to update 
+            var expectedName = "Black Boots";
+            var expectedDescription = "Black boots for sale";
+            int expectedId = 0;
+
+            //create category for foreign key
             var category = new Category
             {
                 Name = "Shoes",
-                Description = "Shoes Department"
+                Description = "Shoe department"
             };
-            categoryRepo.Create(category);
 
-            var product = new Product
+            using (var context = new ECommerceDbContext(options))
             {
-                Name = "Boots",
-                Description = "Boots for sale",
-                Price = 522,
-                CategoryID = category.ID,
-                ImgURL = "sample.png"
-            };
+                context.Categories.Add(category);
+                context.SaveChanges();
+            }
 
-            sut.Create(product);
-            Assert.True(product.ID != 0); 
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                //create product
+                var entity = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sale",
+                    Price = 1500,
+                    CategoryID = category.ID,
+                    ImgURL = "sample_boots_1.png"
+                };
+                context.Products.Add(entity);
+                context.SaveChanges();
 
-            product.Name = "Black Boots";
-            product.Description = "Black boots is for sale right now";
-            sut.Retrieve(product.ID);
+                expectedId = entity.ID;
+            }
 
-            //Act
-            sut.Update(product.ID, product);
-            var actual = sut.Retrieve(product.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var entity = context.Products.Find(expectedId);
 
-            //Assert
-            Assert.Equal(product.Name, actual.Name);
-            Assert.Equal(product.Description, actual.Description);
+                entity.Name = expectedName;
+                entity.Description = expectedDescription;
 
-            //Cleanup
-            sut.Delete(product.ID);
-            categoryRepo.Delete(category.ID);
+                var sut = new ProductRepository(context);
+
+                // Act
+                sut.Update(entity.ID, entity);
+
+                // Assert
+                var actual = context.Products.Find(entity.ID);
+
+                Assert.Equal(expectedName, actual.Name);
+                Assert.Equal(expectedDescription, actual.Description);
+            }
         }
         #endregion
 
@@ -201,20 +292,25 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Delete_WithValidEntity_ShouldDeleteDatabaseRecord()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new ProductRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                 .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                 .Options;
 
-            //create new category for foreign key
-            var categoryRepo = new CategoryRepository(context);
+            //create category for foreign key
             var category = new Category
             {
                 Name = "Shoes",
-                Description = "Shoes Department"
+                Description = "Shoe department"
             };
-            categoryRepo.Create(category);
 
-            var product = new Product
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Categories.Add(category);
+                context.SaveChanges();
+            }
+
+            //create product
+            var entity = new Product
             {
                 Name = "Boots",
                 Description = "Boots for sale",
@@ -223,18 +319,24 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 ImgURL = "sample.png"
             };
 
-            sut.Create(product);
-            Assert.True(product.ID != 0);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                context.Products.Add(entity);
+                context.SaveChanges();
+            }
 
-            //Act
-            sut.Delete(product.ID);
-            var actual = sut.Retrieve(product.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new ProductRepository(context);
 
-            //Assert
-            Assert.Null(actual);
+                // Act
+                sut.Delete(entity.ID);
 
-            //Cleanup for category
-            categoryRepo.Delete(category.ID);
+                // Assert
+                entity = context.Products.Find(entity.ID);
+                Assert.Null(entity);
+            }
         } 
         #endregion
     }

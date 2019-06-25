@@ -6,6 +6,7 @@ using Xunit;
 using System.Collections;
 using System.Linq;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore.InMemory.Storage.Internal;
 
 namespace QuickReach.ECommerce.Infra.Data.Test
 {
@@ -13,7 +14,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
     {
         #region Create
         [Fact]
-        public void SQLiteCreate_WithValidEntity_ShouldCreateDatabaseRecord() 
+        public void Create_WithValidEntity_ShouldCreateDatabaseRecord() 
         {
             //Arrange
             var connectionBuilder = new SqliteConnectionStringBuilder()
@@ -31,7 +32,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 Description = "Shoes Department"
             };
 
-            using (var context = new ECommerceDbContext(options))
+            using (var context = new ECommerceDbContext(options)) //context is applicable inside this using
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
@@ -59,24 +60,38 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var category = new Category
+
+            // Arrange
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                   .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
+                   .Options;
+
+            var expected = new Category
             {
                 Name = "Shoes",
                 Description = "Shoes Department"
             };
-            var sut = new CategoryRepository(context);
-            sut.Create(category);
 
-            //Act
-            var actual = sut.Retrieve(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Categories.Add(expected);
+                context.SaveChanges();
 
-            //Assert
-            Assert.NotNull(actual);
+            }
 
-            //Clean up
-            sut.Delete(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new CategoryRepository(context);
+
+                // Act
+                var actual = sut.Retrieve(expected.ID);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+            }
+
         }
         #endregion
 
@@ -84,16 +99,21 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithNonExistingEntityID_ReturnsNull()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new CategoryRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
+                        .Options;
 
-            //Act
-            var actual = sut.Retrieve(-1);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var sut = new CategoryRepository(context);
 
-            //Assert
-            Assert.Null(actual);
+                // Act
+                var actual = sut.Retrieve(0);
 
+                // Assert
+                Assert.Null(actual);
+            }
         }
         #endregion
 
@@ -101,32 +121,45 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new CategoryRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
+                        .Options;
 
-            for (var i = 1; i <= 20; i += 1)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Create(new Category
+                // Arrange
+                for (var i = 1; i <= 20; i += 1)
                 {
-                    Name = string.Format("Category {0}", i),
-                    Description = string.Format("Description {0}", i)
-                });
+                    context.Categories.Add(new Category
+                    {
+                        Name = "Shoes",
+                        Description = "Shoes Department"
+                    });
+                }
+                context.SaveChanges();
+
             }
 
-            //Act
-            var list = sut.Retrieve(5, 5);
-
-            //Assert
-            Assert.True(list.Count() == 5);
-
-            //Cleanup
-            list = sut.Retrieve().ToList();
-            foreach (var entity in list)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Delete(entity.ID);
+                var sut = new CategoryRepository(context);
+
+                // Act & Assert
+                var list = sut.Retrieve(5, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(0, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(10, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(15, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(20, 5);
+                Assert.True(list.Count() == 0);
             }
-            //list.All(c => { sut.Delete(c.ID); return true; }); 
 
         }
         #endregion
@@ -135,27 +168,42 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Delete_WithValidEntity_ShouldRemoveDatabaseRecord()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new CategoryRepository(context);
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
 
-            var category = new Category
+            Category entity = new Category
             {
                 Name = "Shoes",
                 Description = "Shoes Department"
             };
 
-            sut.Create(category);
-            sut.Retrieve(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            Assert.True(category.ID != 0);
+                // Arrange
+                context.Categories.Add(entity);
+                context.SaveChanges();
+            }
 
-            //Act
-            sut.Delete(category.ID);
-            var actual = sut.Retrieve(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new CategoryRepository(context);
 
-            //Assert
-            Assert.Null(actual);
+                // Act
+                sut.Delete(entity.ID);
+
+                // Assert
+                entity = context.Categories.Find(entity.ID);
+                Assert.Null(entity);
+            }
         }
         #endregion
 
@@ -163,34 +211,57 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Update_WithValidEntity_ShouldUpdateDatabaseRecord()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new CategoryRepository(context);
-
-            var category = new Category
+            var connectionBuilder = new SqliteConnectionStringBuilder()
             {
-                Name = "Shoes",
-                Description = "Shoes Department"
+                DataSource = ":memory:"
             };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
 
-            sut.Create(category);
+            var expectedName = "Sandals";
+            var expectedDescription = "Sandals Department";
+            int expectedId = 0;
 
-            category.Name = "Boots";
-            category.Description = "Shoes Department Updated";
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            var actual = sut.Retrieve(category.ID);
+                // Arrange
+                var entity = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoes Department"
+                };
 
-            //Act
-            sut.Update(category.ID, category);
-            var expected = sut.Retrieve(category.ID);
+                context.Categories.Add(entity);
+                context.SaveChanges();
 
-            //Assert
-            Assert.Equal(actual.ID, expected.ID);
-            Assert.Equal(actual.Name, expected.Name);
-            Assert.Equal(actual.Description, expected.Description);
+                expectedId = entity.ID;
+            }
 
-            //Cleanup
-            sut.Delete(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var entity = context.Categories.Find(expectedId);
+
+                entity.Name = expectedName;
+                entity.Description = expectedDescription;
+
+                var sut = new CategoryRepository(context);
+
+                // Act
+                sut.Update(entity.ID, entity);
+
+                // Assert
+                var actual = context.Categories.Find(entity.ID);
+
+                Assert.Equal(expectedName, actual.Name);
+                Assert.Equal(expectedDescription, actual.Description);
+            }
+
         } 
         #endregion
 

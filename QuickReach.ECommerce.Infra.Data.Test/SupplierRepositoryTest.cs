@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 using System.Linq;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace QuickReach.ECommerce.Infra.Data.Test
 {
@@ -16,26 +18,44 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Create_WithValidEntity_ShouldSaveInDatabase()
         {
             //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
-            var supplier = new Supplier
+            var connectionBuilder = new SqliteConnectionStringBuilder()
             {
-                Name = "Melrose Mejidana",
-                Description = "Shoe Supplier",
-                IsActive = true
+                DataSource = ":memory:"
             };
 
-            //Act
-            sut.Create(supplier);
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
 
-            //Assert
-            Assert.True(supplier.ID != 0);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
 
-            var actual = sut.Retrieve(supplier.ID);
-            Assert.NotNull(actual);
+            var expected = new Supplier
+            {
+                Name = "Melrose Mejidana",
+                Description = "Active shoe supplier "
+            };
+           
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            //Clenup
-            sut.Delete(supplier.ID);
+                var sut = new SupplierRepository(context);
+
+                //Act
+                sut.Create(expected);
+            }
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                var actual = context.Supplier.Find(expected.ID);
+
+                //Assert
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+            }
+
         }
         #endregion
 
@@ -43,25 +63,37 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retreieve_WithValidEntity_ShouldReturnValidEntity()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
-            var supplier = new Supplier
+            // Arrange
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                       .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
+                       .Options;
+
+            var expected = new Supplier
             {
                 Name = "Melrose Mejidana",
-                Description = "Shoe Supplier",
-                IsActive = true
+                Description = "Boots Supplier"
             };
-            sut.Create(supplier);
 
-            //Act
-            var actual = sut.Retrieve(supplier.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Supplier.Add(expected);
+                context.SaveChanges();
 
-            //Assert
-            Assert.NotNull(actual);
+            }
 
-            //Cleanup
-            sut.Delete(supplier.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new SupplierRepository(context);
+
+                // Act
+                var actual = sut.Retrieve(expected.ID);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+
+            }
         }
         #endregion
 
@@ -69,15 +101,21 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithInvalidEntity_ShouldReturnNull()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
+                        .Options;
 
-            //Act
-            var actual = sut.Retrieve(-1);
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var sut = new SupplierRepository(context);
 
-            //Assert
-            Assert.Null(actual);
+                // Act
+                var actual = sut.Retrieve(0);
+
+                // Assert
+                Assert.Null(actual);
+            }
         }
         #endregion
 
@@ -85,36 +123,45 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithSkipAndCount_ShouldReturnCorrectPage()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                         .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
+                         .Options;
 
-            for (var i = 1; i <= 20; i += 1)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Create(new Supplier
+                // Arrange
+                for (var i = 1; i <= 20; i += 1)
                 {
-                    Name = string.Format("Supplier {0}", i),
-                    Description = string.Format("Description {0}", i),
-                    IsActive = true
-                });
+                    context.Supplier.Add(new Supplier
+                    {
+                        Name = string.Format("Supplier #{0}", i),
+                        Description = string.Format("Description #{0}", i)
+                    });
+                }
+                context.SaveChanges();
+
             }
 
-            //Act
-            var list = sut.Retrieve(5, 5);
-
-            //Assert
-            Assert.True(list.Count() == 5);
-
-            //Cleanup
-            //list = sut.Retrieve(0, int.MaxValue).ToList();
-            list = sut.Retrieve().ToList();
-            foreach (var entity in list)
+            using (var context = new ECommerceDbContext(options))
             {
-                sut.Delete(entity.ID);
+                var sut = new SupplierRepository(context);
+
+                // Act & Assert
+                var list = sut.Retrieve(5, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(0, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(10, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(15, 5);
+                Assert.True(list.Count() == 5);
+
+                list = sut.Retrieve(20, 5);
+                Assert.True(list.Count() == 0);
             }
-
-
-
         }
         #endregion
 
@@ -122,34 +169,59 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Update_WithValidEntity_ShouldUpdateDatabaseRecord()
         {
-            //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
-            var supplier = new Supplier
+            var connectionBuilder = new SqliteConnectionStringBuilder()
             {
-                Name = "Melrose Mejidana",
-                Description = "Shoe Supplier",
-                IsActive = true
+                DataSource = ":memory:"
             };
 
-            sut.Create(supplier);
-            Assert.True(supplier.ID != 0);
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
 
-            supplier.Name = "Myel Mejidana";
-            supplier.Description = "Shoe Supplier will be hiatus";
-            supplier.IsActive = false;
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
 
-            //Act
-            sut.Update(supplier.ID, supplier);
-            var actual = sut.Retrieve(supplier.ID);
+            //values to be update
+            var expectedName = "Supplier Shoes";
+            var expectedDescription = "Supplier Shoes Department";
+            int expectedId = 0;
 
-            //Assert
-            Assert.Equal(supplier.Name, actual.Name);
-            Assert.Equal(supplier.Description, actual.Description);
-            Assert.Equal(supplier.IsActive, actual.IsActive);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            //Cleanup
-            sut.Delete(supplier.ID);
+                var entity = new Supplier
+                {
+                    Name = "Melrose Mejidana",
+                    Description = "Active shoe supplier "
+                };
+
+                context.Supplier.Add(entity);
+                context.SaveChanges();
+
+                expectedId = entity.ID;
+            }
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                var entity = context.Supplier.Find(expectedId);
+
+                entity.Name = expectedName;
+                entity.Description = expectedDescription;
+
+                var sut = new SupplierRepository(context);
+
+                // Act
+                sut.Update(entity.ID, entity);
+
+                // Assert
+                var actual = context.Supplier.Find(entity.ID);
+
+                Assert.Equal(expectedName, actual.Name);
+                Assert.Equal(expectedDescription, actual.Description);
+            }
+            
         }
         #endregion
 
@@ -158,23 +230,44 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Delete_WithValidEntity_ShouldRemoveDatabaseRecord()
         {
             //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new SupplierRepository(context);
-            var supplier = new Supplier
+            var connectionBuilder = new SqliteConnectionStringBuilder()
             {
-                Name = "Melrose Mejidana",
-                Description = "Shoe Supplier",
-                IsActive = true
+                DataSource = ":memory:"
             };
-            sut.Create(supplier);
-            Assert.True(supplier.ID != 0);
 
-            //Act
-            sut.Delete(supplier.ID);
-            var actual = sut.Retrieve(supplier.ID);
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
 
-            //Assert
-            Assert.Null(actual);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
+
+            var entity = new Supplier
+            {
+                Name = string.Format("Supplier {0}", 1),
+                Description = string.Format("Description {0}", 1)
+            };
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                // Arrange
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
+                context.Supplier.Add(entity);
+                context.SaveChanges();
+            }
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new SupplierRepository(context);
+
+                // Act
+                sut.Delete(entity.ID);
+
+                // Assert
+                entity = context.Supplier.Find(entity.ID);
+                Assert.Null(entity);
+            }
         } 
         #endregion
     }
