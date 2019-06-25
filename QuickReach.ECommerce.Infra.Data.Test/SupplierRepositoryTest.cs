@@ -22,9 +22,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             {
                 DataSource = ":memory:"
             };
-
             var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
                         .UseSqlite(connection)
                         .Options;
@@ -32,10 +30,10 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             var expected = new Supplier
             {
                 Name = "Melrose Mejidana",
-                Description = "Active shoe supplier "
+                Description = "Active shoe supplier"
             };
-           
-            using (var context = new ECommerceDbContext(options))
+
+            using(var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
@@ -46,11 +44,11 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 sut.Create(expected);
             }
 
-            using (var context = new ECommerceDbContext(options))
+            using(var context = new ECommerceDbContext(options))
             {
                 var actual = context.Supplier.Find(expected.ID);
 
-                //Assert
+                //Arrange
                 Assert.NotNull(actual);
                 Assert.Equal(expected.Name, actual.Name);
                 Assert.Equal(expected.Description, actual.Description);
@@ -64,9 +62,14 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Retreieve_WithValidEntity_ShouldReturnValidEntity()
         {
             // Arrange
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                       .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
-                       .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             var expected = new Supplier
             {
@@ -76,23 +79,24 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Supplier.Add(expected);
                 context.SaveChanges();
-
             }
 
             using (var context = new ECommerceDbContext(options))
             {
                 var sut = new SupplierRepository(context);
 
-                // Act
+                //Act
                 var actual = sut.Retrieve(expected.ID);
 
-                // Assert
+                //Assert
                 Assert.NotNull(actual);
                 Assert.Equal(expected.Name, actual.Name);
                 Assert.Equal(expected.Description, actual.Description);
-
             }
         }
         #endregion
@@ -101,12 +105,20 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithInvalidEntity_ShouldReturnNull()
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
-                        .Options;
+                       .UseSqlite(connection)
+                       .Options;
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 var sut = new SupplierRepository(context);
 
@@ -120,47 +132,47 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         #endregion
 
         #region Retrieve With Skip & Count
-        [Fact]
-        public void Retrieve_WithSkipAndCount_ShouldReturnCorrectPage()
+        [Theory]
+        [InlineData(0,5)]
+        [InlineData(10, 5)]
+        [InlineData(15, 5)]
+        public void Retrieve_WithSkipAndCount_ShouldReturnCorrectPage(int skip, int count)
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder();
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                         .UseInMemoryDatabase($"SupplierForTesting{Guid.NewGuid()}")
-                         .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 for (var i = 1; i <= 20; i += 1)
                 {
-                    context.Supplier.Add(new Supplier
-                    {
+                    context.Supplier.Add( new Supplier {
                         Name = string.Format("Supplier #{0}", i),
                         Description = string.Format("Description #{0}", i)
                     });
                 }
-                context.SaveChanges();
 
+                context.SaveChanges();
             }
 
             using (var context = new ECommerceDbContext(options))
             {
                 var sut = new SupplierRepository(context);
 
-                // Act & Assert
-                var list = sut.Retrieve(5, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(0, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(10, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(15, 5);
-                Assert.True(list.Count() == 5);
+                // Act and Assert
+                var list = sut.Retrieve(skip, count);
+                Assert.True(list.Count() == count);
 
                 list = sut.Retrieve(20, 5);
                 Assert.True(list.Count() == 0);
+
+                Assert.NotNull(list);
             }
         }
         #endregion
@@ -214,14 +226,12 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 // Act
                 sut.Update(entity.ID, entity);
-
-                // Assert
                 var actual = context.Supplier.Find(entity.ID);
 
+                // Assert
                 Assert.Equal(expectedName, actual.Name);
                 Assert.Equal(expectedDescription, actual.Description);
             }
-            
         }
         #endregion
 
@@ -263,9 +273,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 // Act
                 sut.Delete(entity.ID);
+                entity = context.Supplier.Find(entity.ID);
 
                 // Assert
-                entity = context.Supplier.Find(entity.ID);
                 Assert.Null(entity);
             }
         } 

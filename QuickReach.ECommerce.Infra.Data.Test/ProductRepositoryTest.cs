@@ -87,8 +87,10 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
             //Arrange
+            var connectionBuilder = new SqliteConnectionStringBuilder();
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                        .UseSqlite(connection)
                         .Options;
 
             //create category for foreign key
@@ -100,6 +102,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Categories.Add(category);
                 context.SaveChanges();
             }
@@ -116,6 +121,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Products.Add(expected);
                 context.SaveChanges();
             }
@@ -142,12 +150,20 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithRetrieve_WithNonExistingEntityID_ReturnsNull()
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
+                        .UseSqlite(connection)
                         .Options;
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 var sut = new ProductRepository(context);
 
@@ -161,12 +177,20 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         #endregion
 
         #region Retrieve With Skip & Count
-        [Fact]
-        public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
+        [Theory]
+        [InlineData(0, 5)]
+        [InlineData(10, 5)]
+        [InlineData(15, 5)]
+        public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage(int skip, int count)
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                 .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
-                 .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             //create category for foreign key
             var category = new Category
@@ -177,12 +201,18 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Categories.Add(category);
                 context.SaveChanges();
             }
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 for (var i = 1; i <= 20; i += 1)
                 {
@@ -196,6 +226,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                         ImgURL = string.Format("sample_product_{0}.png", i)
                     });
                 }
+
                 context.SaveChanges();
 
             }
@@ -204,20 +235,13 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 var sut = new ProductRepository(context);
 
                 // Act & Assert
-                var list = sut.Retrieve(5, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(0, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(10, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(15, 5);
-                Assert.True(list.Count() == 5);
+                var list = sut.Retrieve(skip, count);
+                Assert.True(list.Count() == count);
 
                 list = sut.Retrieve(20, 5);
                 Assert.True(list.Count() == 0);
+
+                Assert.NotNull(list);
             }
         }
         #endregion
@@ -226,13 +250,20 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Update_WithValidEntity_ShouldReflectChangesInDatabaseRecord()
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-               .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
-               .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             //to update 
             var expectedName = "Black Boots";
             var expectedDescription = "Black boots for sale";
+            var expectedPrice = 1200;
+            var expectedImgURL = "black_boots_classA.png";
             int expectedId = 0;
 
             //create category for foreign key
@@ -244,12 +275,18 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Categories.Add(category);
                 context.SaveChanges();
             }
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 //create product
                 var entity = new Product
@@ -273,17 +310,20 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 entity.Name = expectedName;
                 entity.Description = expectedDescription;
+                entity.ImgURL = expectedImgURL;
+                entity.Price = expectedPrice;
 
                 var sut = new ProductRepository(context);
 
                 // Act
                 sut.Update(entity.ID, entity);
-
-                // Assert
                 var actual = context.Products.Find(entity.ID);
 
+                // Assert
                 Assert.Equal(expectedName, actual.Name);
                 Assert.Equal(expectedDescription, actual.Description);
+                Assert.Equal(expectedPrice, actual.Price);
+                Assert.Equal(expectedImgURL, actual.ImgURL);
             }
         }
         #endregion
@@ -292,9 +332,14 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Delete_WithValidEntity_ShouldDeleteDatabaseRecord()
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                 .UseInMemoryDatabase($"ProductForTesting{Guid.NewGuid()}")
-                 .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             //create category for foreign key
             var category = new Category
@@ -305,6 +350,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Categories.Add(category);
                 context.SaveChanges();
             }
@@ -332,9 +380,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 // Act
                 sut.Delete(entity.ID);
+                entity = context.Products.Find(entity.ID);
 
                 // Assert
-                entity = context.Products.Find(entity.ID);
                 Assert.Null(entity);
             }
         } 

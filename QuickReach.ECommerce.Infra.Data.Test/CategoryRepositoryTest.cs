@@ -62,9 +62,11 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         {
 
             // Arrange
+            var connectionBuilder = new SqliteConnectionStringBuilder();
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                   .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
-                   .Options;
+                        .UseSqlite(connection)
+                        .Options;
 
             var expected = new Category
             {
@@ -74,6 +76,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 context.Categories.Add(expected);
                 context.SaveChanges();
 
@@ -99,12 +104,17 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithNonExistingEntityID_ReturnsNull()
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder();
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
+                        .UseSqlite(connection)
                         .Options;
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 var sut = new CategoryRepository(context);
 
@@ -118,15 +128,23 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         #endregion
 
         #region Retrieve With Skip & Count
-        [Fact]
-        public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
+        [Theory]
+        [InlineData(0, 5)]
+        [InlineData(10, 5)]
+        [InlineData(15, 5)]
+        public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage(int skip, int count)
         {
+            var connectionBuilder = new SqliteConnectionStringBuilder();
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
             var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseInMemoryDatabase($"CategoryForTesting{Guid.NewGuid()}")
+                        .UseSqlite(connection)
                         .Options;
 
             using (var context = new ECommerceDbContext(options))
             {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
                 // Arrange
                 for (var i = 1; i <= 20; i += 1)
                 {
@@ -145,20 +163,13 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 var sut = new CategoryRepository(context);
 
                 // Act & Assert
-                var list = sut.Retrieve(5, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(0, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(10, 5);
-                Assert.True(list.Count() == 5);
-
-                list = sut.Retrieve(15, 5);
-                Assert.True(list.Count() == 5);
+                var list = sut.Retrieve(skip, count);
+                Assert.True(list.Count() == count);
 
                 list = sut.Retrieve(20, 5);
                 Assert.True(list.Count() == 0);
+
+                Assert.NotNull(list);
             }
 
         }
