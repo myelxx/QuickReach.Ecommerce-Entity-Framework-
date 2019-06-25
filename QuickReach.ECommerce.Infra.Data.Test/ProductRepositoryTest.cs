@@ -30,37 +30,32 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                         .UseSqlite(connection)
                         .Options;
 
-            //create category for foreign key
-            var category = new Category
-            {
-                Name = "Shoes",
-                Description = "Shoe department"
-            };
+            var category = new Category();
+            var expected = new Product();
 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
 
+                //create category
+                category = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoe department"
+                };
                 context.Categories.Add(category);
                 context.SaveChanges();
-            }
 
-            //create product
-            var expected = new Product
-            {
-                Name = "Boots",
-                Description = "Boots for sell",
-                Price = 1500,
-                CategoryID = category.ID,
-                ImgURL = "sample_boots_1.png"
-            };
-
-            using (var context = new ECommerceDbContext(options))
-            {
-                context.Database.OpenConnection();
-                context.Database.EnsureCreated();
-
+                //create product
+                expected = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sell",
+                    Price = 1500,
+                    CategoryID = category.ID,
+                    ImgURL = "sample_boots_1.png"
+                };
                 var sut = new ProductRepository(context);
 
                 //Act

@@ -12,6 +12,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 {
     public class CategoryRepositoryTest
     {
+
         #region Create
         [Fact]
         public void Create_WithValidEntity_ShouldCreateDatabaseRecord() 
