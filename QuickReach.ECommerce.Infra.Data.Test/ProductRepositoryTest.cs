@@ -177,6 +177,8 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             };
 
             sut.Create(product);
+            Assert.True(product.ID != 0); 
+
             product.Name = "Black Boots";
             product.Description = "Black boots is for sale right now";
             sut.Retrieve(product.ID);
@@ -220,7 +222,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 CategoryID = category.ID,
                 ImgURL = "sample.png"
             };
+
             sut.Create(product);
+            Assert.True(product.ID != 0);
 
             //Act
             sut.Delete(product.ID);
@@ -229,7 +233,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             //Assert
             Assert.Null(actual);
 
-            //Cleanup
+            //Cleanup for category
             categoryRepo.Delete(category.ID);
         } 
         #endregion

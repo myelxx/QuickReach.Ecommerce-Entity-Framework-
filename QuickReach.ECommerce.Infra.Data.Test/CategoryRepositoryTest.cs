@@ -5,6 +5,7 @@ using System;
 using Xunit;
 using System.Collections;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 
 namespace QuickReach.ECommerce.Infra.Data.Test
 {
@@ -12,29 +13,44 @@ namespace QuickReach.ECommerce.Infra.Data.Test
     {
         #region Create
         [Fact]
-        public void Create_WithValidEntity_ShouldCreateDatabaseRecord()
+        public void SQLiteCreate_WithValidEntity_ShouldCreateDatabaseRecord() 
         {
             //Arrange
-            var context = new ECommerceDbContext();
-            var sut = new CategoryRepository(context);
-            var category = new Category
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
+
+            var expected = new Category
             {
                 Name = "Shoes",
                 Description = "Shoes Department"
             };
 
-            //Act
-            sut.Create(category);
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
 
-            //Assert
-            Assert.True(category.ID != 0);
+                var sut = new CategoryRepository(context);
 
-            var entity = sut.Retrieve(category.ID);
-            Assert.NotNull(entity);
+                //Act
+                sut.Create(expected);
+            }
 
-            //Cleanup
-            sut.Delete(category.ID);
+            using (var context = new ECommerceDbContext(options))
+            {
+                //Assert
+                var actual = context.Categories.Find(expected.ID);
 
+                Assert.NotNull(actual);
+                Assert.Equal(expected.Name, actual.Name);
+                Assert.Equal(expected.Description, actual.Description);
+            }
 
         }
         #endregion
@@ -64,7 +80,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         }
         #endregion
 
-        #region Retrieve Invalid Entity
+        #region Retrieve Non Existing Entity
         [Fact]
         public void Retrieve_WithNonExistingEntityID_ReturnsNull()
         {
