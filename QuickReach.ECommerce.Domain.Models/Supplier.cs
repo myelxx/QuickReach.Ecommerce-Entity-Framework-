@@ -18,11 +18,9 @@ namespace QuickReach.ECommerce.Domain.Models
         [MaxLength (255)]
         public string Description { get; set; }
 
+        [Required]
         public bool IsActive { get; set; }
 
-        //[Required]
-        //public int ProductID { get; set; }
 
-        //public IEnumerable Product { get; set; }
     }
 }

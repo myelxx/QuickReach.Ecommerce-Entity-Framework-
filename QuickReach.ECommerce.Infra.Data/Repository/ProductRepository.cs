@@ -7,7 +7,7 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 {
     public class ProductRepository : RepositoryBase<Product>, IRepository<Product>
     {
-        public ProductRepository(ECommerceDbContext context) : base(context) //calls contructor of repository base
+        public ProductRepository(ECommerceDbContext context) : base(context) //calls and pass context to contructor of repository base
         {
 
         }

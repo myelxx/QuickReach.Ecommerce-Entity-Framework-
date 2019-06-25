@@ -6,7 +6,7 @@ using QuickReach.ECommerce.Domain.Models;
 
 namespace QuickReach.ECommerce.Infra.Data
 {
-    public abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEntity : EntityBase 
+    public abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEntity : EntityBase //generic type constraint = must be reference (implement) to entity base class 
     {
         private readonly ECommerceDbContext context;
         public RepositoryBase(ECommerceDbContext context)
@@ -15,9 +15,9 @@ namespace QuickReach.ECommerce.Infra.Data
         }
         public TEntity Create(TEntity newEntity)
         {
-            this.context.Set<TEntity>()
+            this.context.Set<TEntity>() //create dbset for the generic entity
                         .Add(newEntity);
-            this.context.SaveChanges();
+            this.context.SaveChanges(); //to reflect in database
             return newEntity;
         }
 

@@ -10,6 +10,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 {
     public class CategoryRepositoryTest
     {
+        #region Create
         [Fact]
         public void Create_WithValidEntity_ShouldCreateDatabaseRecord()
         {
@@ -36,7 +37,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
 
         }
+        #endregion
 
+        #region Retrieve Valid Entity
         [Fact]
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
@@ -59,7 +62,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             //Clean up
             sut.Delete(category.ID);
         }
+        #endregion
 
+        #region Retrieve Invalid Entity
         [Fact]
         public void Retrieve_WithNonExistingEntityID_ReturnsNull()
         {
@@ -74,7 +79,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             Assert.Null(actual);
 
         }
+        #endregion
 
+        #region Retrieve With Skip & Count
         [Fact]
         public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
         {
@@ -98,12 +105,17 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             Assert.True(list.Count() == 5);
 
             //Cleanup
-            list = sut.Retrieve(0, Int32.MaxValue);
-            list.All(c => { sut.Delete(c.ID); return true; });
+            list = sut.Retrieve().ToList();
+            foreach (var entity in list)
+            {
+                sut.Delete(entity.ID);
+            }
+            //list.All(c => { sut.Delete(c.ID); return true; }); 
 
-            //count max, then --
         }
+        #endregion
 
+        #region Delete
         [Fact]
         public void Delete_WithValidEntity_ShouldRemoveDatabaseRecord()
         {
@@ -129,7 +141,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             //Assert
             Assert.Null(actual);
         }
+        #endregion
 
+        #region Update
         [Fact]
         public void Update_WithValidEntity_ShouldUpdateDatabaseRecord()
         {
@@ -161,7 +175,8 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             //Cleanup
             sut.Delete(category.ID);
-        }
+        } 
+        #endregion
 
     }
 }

@@ -11,17 +11,29 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 {
     public class ProductRepositoryTest
     {
+        #region Create
         [Fact]
         public void Create_WithValidEntity_ShouldCreateNewDatabaseRecord()
         {
             //Arrange
             var context = new ECommerceDbContext();
             var sut = new ProductRepository(context);
-            var product = new Product {
+
+            //create new category for foreign key
+            var categoryRepo = new CategoryRepository(context);
+            var category = new Category
+            {
+                Name = "Shoes",
+                Description = "Shoes Department"
+            };
+            categoryRepo.Create(category);
+
+            var product = new Product
+            {
                 Name = "Boots",
                 Description = "Boots for sale",
                 Price = 522,
-                CategoryID = 121,
+                CategoryID = category.ID,
                 ImgURL = "sample.png"
             };
 
@@ -33,20 +45,33 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             //Cleanup
             sut.Delete(product.ID);
+            categoryRepo.Delete(category.ID);
         }
+        #endregion
 
+        #region Retrieve Valid Entity
         [Fact]
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
             //Arrange
             var context = new ECommerceDbContext();
             var sut = new ProductRepository(context);
+
+            //create new category for foreign key
+            var categoryRepo = new CategoryRepository(context);
+            var category = new Category
+            {
+                Name = "Shoes",
+                Description = "Shoes Department"
+            };
+            categoryRepo.Create(category);
+
             var product = new Product
             {
                 Name = "Boots",
                 Description = "Boots for sale",
                 Price = 522,
-                CategoryID = 121,
+                CategoryID = category.ID,
                 ImgURL = "sample.png"
             };
             sut.Create(product);
@@ -59,8 +84,11 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             //Cleanup
             sut.Delete(product.ID);
+            categoryRepo.Delete(category.ID);
         }
+        #endregion
 
+        #region Retrieve Invalid Entity
         [Fact]
         public void Retrieve_WithRetrieve_WithNonExistingEntityID_ReturnsNull()
         {
@@ -74,7 +102,9 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             //Assert
             Assert.Null(actual);
         }
+        #endregion
 
+        #region Retrieve With Skip & Count
         [Fact]
         public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage()
         {
@@ -82,13 +112,23 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             var context = new ECommerceDbContext();
             var sut = new ProductRepository(context);
 
-            for(var i=1; i <= 20; i += 1)
+            //create new category for foreign key
+            var categoryRepo = new CategoryRepository(context);
+            var category = new Category
             {
-                sut.Create(new Product {
+                Name = "Shoes",
+                Description = "Shoes Department"
+            };
+            categoryRepo.Create(category);
+
+            for (var i = 1; i <= 20; i += 1)
+            {
+                sut.Create(new Product
+                {
                     Name = string.Format("Product {0}", i),
                     Description = string.Format("Description {0}", i),
                     Price = 500 + i,
-                    CategoryID = 121,
+                    CategoryID = category.ID,
                     ImgURL = string.Format("img_url_sample_{0}.png", i)
                 });
             }
@@ -100,24 +140,39 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             Assert.True(list.Count() == 5);
 
             //Cleanup
-            list = sut.Retrieve(0, Int32.MaxValue);
+            //list = sut.Retrieve(0, Int32.MaxValue);
+            list = sut.Retrieve().ToList();
             foreach (var entity in list)
             {
                 sut.Delete(entity.ID);
             }
-        }
+            categoryRepo.Delete(category.ID);
+        } 
+        #endregion
 
+        #region Update
         [Fact]
         public void Update_WithValidEntity_ShouldReflectChangesInDatabaseRecord()
         {
             //Arrange
             var context = new ECommerceDbContext();
             var sut = new ProductRepository(context);
-            var product = new Product {
+
+            //create new category for foreign key
+            var categoryRepo = new CategoryRepository(context);
+            var category = new Category
+            {
+                Name = "Shoes",
+                Description = "Shoes Department"
+            };
+            categoryRepo.Create(category);
+
+            var product = new Product
+            {
                 Name = "Boots",
                 Description = "Boots for sale",
                 Price = 522,
-                CategoryID = 121,
+                CategoryID = category.ID,
                 ImgURL = "sample.png"
             };
 
@@ -136,23 +191,36 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             //Cleanup
             sut.Delete(product.ID);
-
+            categoryRepo.Delete(category.ID);
         }
+        #endregion
 
+        #region Delete
         [Fact]
         public void Delete_WithValidEntity_ShouldDeleteDatabaseRecord()
         {
             //Arrange
             var context = new ECommerceDbContext();
             var sut = new ProductRepository(context);
+
+            //create new category for foreign key
+            var categoryRepo = new CategoryRepository(context);
+            var category = new Category
+            {
+                Name = "Shoes",
+                Description = "Shoes Department"
+            };
+            categoryRepo.Create(category);
+
             var product = new Product
             {
                 Name = "Boots",
                 Description = "Boots for sale",
                 Price = 522,
-                CategoryID = 121,
+                CategoryID = category.ID,
                 ImgURL = "sample.png"
             };
+            sut.Create(product);
 
             //Act
             sut.Delete(product.ID);
@@ -160,6 +228,10 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             //Assert
             Assert.Null(actual);
-        }
+
+            //Cleanup
+            categoryRepo.Delete(category.ID);
+        } 
+        #endregion
     }
 }

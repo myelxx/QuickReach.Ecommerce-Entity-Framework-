@@ -10,7 +10,6 @@ namespace QuickReach.ECommerce.Infra.Data
         TEntity Create(TEntity newEntity);
         TEntity Retrieve(int entityId);
         IEnumerable<TEntity> Retrieve(int skip = 0, int count = 10);
-
         TEntity Update(int entityId, TEntity entity);
         void Delete(int entityId);
     }

@@ -4,7 +4,7 @@ using System;
 
 namespace QuickReach.ECommerce.Infra.Data
 {
-    public class ECommerceDbContext : DbContext
+    public class ECommerceDbContext : DbContext //provides access to EF confi options for the context
     {
 
         public ECommerceDbContext(DbContextOptions<ECommerceDbContext> options) : base(options)
