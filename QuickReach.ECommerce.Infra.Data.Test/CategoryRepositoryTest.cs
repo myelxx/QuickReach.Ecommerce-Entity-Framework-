@@ -274,8 +274,30 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 Assert.Equal(expectedDescription, actual.Description);
             }
 
-        } 
+        }
         #endregion
 
+        #region Delete Category Throws Exception
+        [Fact]
+        public void Delete_WithValidCategoryAndProduct_ShouldThrowException()
+        {
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+            var option = new DbContextOptionsBuilder<ECommerceDbContext>()
+                       .UseSqlite(connection)
+                       .Options;
+
+            var Category = new Category()
+            {
+                Name = "Black Shoes",
+                Description = "Black Shoes for sale"
+            };
+
+
+        }
+        #endregion
     }
 }

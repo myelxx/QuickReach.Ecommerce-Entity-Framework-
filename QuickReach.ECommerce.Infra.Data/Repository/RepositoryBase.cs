@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using QuickReach.ECommerce.Domain.Models;
+using QuickReach.ECommerce.Domain;
 
 namespace QuickReach.ECommerce.Infra.Data
 {
     public abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEntity : EntityBase //generic type constraint = must be reference (implement) to entity base class 
     {
-        private readonly ECommerceDbContext context;
+        protected readonly ECommerceDbContext context;
         public RepositoryBase(ECommerceDbContext context)
         {
             this.context = context;
@@ -28,7 +29,7 @@ namespace QuickReach.ECommerce.Infra.Data
             this.context.SaveChanges();
         }
 
-        public TEntity Retrieve(int entityId)
+        public virtual TEntity Retrieve(int entityId)
         {
             var entity = this.context.Find<TEntity>(entityId);
             return entity;

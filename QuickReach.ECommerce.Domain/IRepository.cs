@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace QuickReach.ECommerce.Infra.Data
+namespace QuickReach.ECommerce.Domain
 {
     public interface IRepository<TEntity> where TEntity : EntityBase
     {
