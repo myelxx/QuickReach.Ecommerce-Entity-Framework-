@@ -88,32 +88,37 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                         .UseSqlite(connection)
                         .Options;
 
-            //create category for foreign key
-            var category = new Category
-            {
-                Name = "Shoes",
-                Description = "Shoe department"
-            };
+            var category = new Category();
+            var expected = new Product();
 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
 
+                //create category
+                category = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoe department"
+                };
+
                 context.Categories.Add(category);
                 context.SaveChanges();
+
+                //create product
+                expected = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sell",
+                    Price = 1500,
+                    CategoryID = category.ID,
+                    ImgURL = "sample_boots_1.png"
+                };
+
+                context.SaveChanges();
             }
-
-            //create product
-            var expected = new Product
-            {
-                Name = "Boots",
-                Description = "Boots for sell",
-                Price = 1500,
-                CategoryID = category.ID,
-                ImgURL = "sample_boots_1.png"
-            };
-
+ 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
@@ -187,26 +192,23 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                         .UseSqlite(connection)
                         .Options;
 
-            //create category for foreign key
-            var category = new Category
-            {
-                Name = "Shoes",
-                Description = "Shoe department"
-            };
+            var category = new Category();
+            var expected = new Product();
 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
+
+                //create category
+                category = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoe department"
+                };
 
                 context.Categories.Add(category);
                 context.SaveChanges();
-            }
-
-            using (var context = new ECommerceDbContext(options))
-            {
-                context.Database.OpenConnection();
-                context.Database.EnsureCreated();
 
                 // Arrange
                 for (var i = 1; i <= 20; i += 1)
@@ -261,26 +263,23 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             var expectedImgURL = "black_boots_classA.png";
             int expectedId = 0;
 
-            //create category for foreign key
-            var category = new Category
-            {
-                Name = "Shoes",
-                Description = "Shoe department"
-            };
+            var category = new Category();
+            var expected = new Product();
 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
+
+                //create category
+                category = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoe department"
+                };
 
                 context.Categories.Add(category);
                 context.SaveChanges();
-            }
-
-            using (var context = new ECommerceDbContext(options))
-            {
-                context.Database.OpenConnection();
-                context.Database.EnsureCreated();
 
                 // Arrange
                 //create product
@@ -336,34 +335,34 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                         .UseSqlite(connection)
                         .Options;
 
-            //create category for foreign key
-            var category = new Category
-            {
-                Name = "Shoes",
-                Description = "Shoe department"
-            };
+            var category = new Category();
+            var entity = new Product();
 
             using (var context = new ECommerceDbContext(options))
             {
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
 
+                //create category
+                category = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoe department"
+                };
+
                 context.Categories.Add(category);
                 context.SaveChanges();
-            }
 
-            //create product
-            var entity = new Product
-            {
-                Name = "Boots",
-                Description = "Boots for sale",
-                Price = 522,
-                CategoryID = category.ID,
-                ImgURL = "sample.png"
-            };
+                //create product
+                entity = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sale",
+                    Price = 522,
+                    CategoryID = category.ID,
+                    ImgURL = "sample.png"
+                };
 
-            using (var context = new ECommerceDbContext(options))
-            {
                 // Arrange
                 context.Products.Add(entity);
                 context.SaveChanges();

@@ -11,6 +11,8 @@ namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            builder.ToTable("Prdct");
+
             builder.Property(p => p.ID)
                    .IsRequired()
                    .ValueGeneratedOnAdd(); 
