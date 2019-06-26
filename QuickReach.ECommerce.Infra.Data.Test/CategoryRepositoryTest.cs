@@ -286,18 +286,55 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 DataSource = ":memory:"
             };
             var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var option = new DbContextOptionsBuilder<ECommerceDbContext>()
-                       .UseSqlite(connection)
-                       .Options;
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
 
-            var Category = new Category()
+            var entity = new Category();
+            var product = new Product();
+
+            using (var context = new ECommerceDbContext(options))
             {
-                Name = "Black Shoes",
-                Description = "Black Shoes for sale"
-            };
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
+                // Arrange
+                context.Categories.Add(entity);
+                context.SaveChanges();
+
+                //create category
+                entity = new Category
+                {
+                    Name = "Shoes",
+                    Description = "Shoes Department"
+                };
+
+                //create product
+                product = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sell",
+                    Price = 1500,
+                    CategoryID = entity.ID,
+                    ImgURL = "sample_boots_1.png"
+                };
+                context.Products.Add(product);
+                context.SaveChanges();
+            }
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                var sut = new CategoryRepository(context);
+
+                //Act & Assert
+                entity = context.Categories.Find(entity.ID);
+                Assert.Throws<SystemException>( () => sut.Delete(entity.ID));
+            }
 
 
         }
         #endregion
+
+
     }
 }

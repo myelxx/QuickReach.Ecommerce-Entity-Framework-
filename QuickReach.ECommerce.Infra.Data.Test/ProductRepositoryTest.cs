@@ -379,7 +379,48 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 // Assert
                 Assert.Null(entity);
             }
-        } 
+        }
+        #endregion
+
+        #region Create Category Throws Exception
+        [Fact]
+        public void Create_WithValidProductAndWithoutExistingCategory_ShouldThrowException()
+        {
+            //Arrange
+            var connectionBuilder = new SqliteConnectionStringBuilder()
+            {
+                DataSource = ":memory:"
+            };
+
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+
+            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
+                        .UseSqlite(connection)
+                        .Options;
+
+            var expected = new Product();
+
+            using (var context = new ECommerceDbContext(options))
+            {
+                context.Database.OpenConnection();
+                context.Database.EnsureCreated();
+
+                //create product
+                expected = new Product
+                {
+                    Name = "Boots",
+                    Description = "Boots for sell",
+                    Price = 1500,
+                    CategoryID = -1,
+                    ImgURL = "sample_boots_1.png"
+                };
+                var sut = new ProductRepository(context);
+
+                //Act & assert
+                Assert.Throws<SystemException>(() => sut.Create(expected));
+            }
+
+        }
         #endregion
     }
 }

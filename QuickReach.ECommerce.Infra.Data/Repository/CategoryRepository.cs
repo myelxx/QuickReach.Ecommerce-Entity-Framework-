@@ -14,9 +14,25 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
         {
 
         }
+
+        public override void Delete(int entityId)
+        {
+            var product = this.context.Products.Find(entityId);
+            var category = Retrieve(entityId);
+
+            if (product.CategoryID == category.ID)
+            {
+                throw new SystemException("This category can't be deleted. It will delete the products.");
+            }
+            
+            this.context.Remove<Category>(category);
+            this.context.SaveChanges();
+
+        }
         public override Category Retrieve(int entityId)
         {
             var entity = this.context.Categories
+                         .AsNoTracking()
                          .Include(c => c.Products)
                          .Where(c => c.ID == entityId)
                          .FirstOrDefault();
