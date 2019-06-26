@@ -299,15 +299,15 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 // Arrange
-                context.Categories.Add(entity);
-                context.SaveChanges();
-
+                
                 //create category
                 entity = new Category
                 {
                     Name = "Shoes",
                     Description = "Shoes Department"
                 };
+                context.Categories.Add(entity);
+                context.SaveChanges();
 
                 //create product
                 product = new Product
@@ -318,6 +318,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                     CategoryID = entity.ID,
                     ImgURL = "sample_boots_1.png"
                 };
+
                 context.Products.Add(product);
                 context.SaveChanges();
             }
@@ -328,7 +329,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 //Act & Assert
                 entity = context.Categories.Find(entity.ID);
-                Assert.Throws<SystemException>( () => sut.Delete(entity.ID));
+                Assert.Throws<SystemException>(() => sut.Delete(entity.ID));
             }
 
 
