@@ -277,7 +277,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         }
         #endregion
 
-        #region Delete Category Throws Exception
+        #region Delete Throws Exception
         [Fact]
         public void Delete_WithValidCategoryAndProduct_ShouldThrowException()
         {
@@ -329,7 +329,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 //Act & Assert
                 entity = context.Categories.Find(entity.ID);
-                Assert.Throws<SystemException>(() => sut.Delete(entity.ID));
+                Assert.Throws<InvalidOperationException>(() => sut.Delete(entity.ID));
             }
 
 

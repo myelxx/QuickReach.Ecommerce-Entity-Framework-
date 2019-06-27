@@ -13,19 +13,19 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
         {
 
         }
-        public override Product Create(Product newEntity)
-        {
-            var category = this.context.Categories.Find(newEntity.CategoryID);
+        //public override Product Create(Product newEntity)
+        //{
+        //    var category = this.context.Categories.Find(newEntity.CategoryID);
 
-            if (category == null)
-            {
-                throw new SystemException("Category does not exist");
-            }
+        //    if (category == null)
+        //    {
+        //        throw new SystemException("Category does not exist");
+        //    }
 
-            this.context.Add(newEntity);
-            this.context.SaveChanges(); //to reflect in database
-            return newEntity;
-        }
+        //    this.context.Add(newEntity);
+        //    this.context.SaveChanges(); //to reflect in database
+        //    return newEntity;
+        //}
         public IEnumerable<Product> Retrieve(string search = "", int skip = 0, int count = 10)
         {
             var result = this.context.Products

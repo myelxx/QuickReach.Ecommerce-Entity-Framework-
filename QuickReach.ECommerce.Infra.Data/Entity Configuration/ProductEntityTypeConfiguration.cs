@@ -11,14 +11,18 @@ namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
-            builder.ToTable("Prdct");
-
             builder.Property(p => p.ID)
                    .IsRequired()
-                   .ValueGeneratedOnAdd(); 
+                   .ValueGeneratedOnAdd();
 
-            builder.HasOne(p => p.Category)
-                   .WithMany(c => c.Products);
+            builder.HasOne(c => c.Category)
+                   .WithMany(p => p.Products)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+
+
+            //builder.HasOne(p => p.Category)
+            //       .WithMany(c => c.Products);
         }
     }
 }

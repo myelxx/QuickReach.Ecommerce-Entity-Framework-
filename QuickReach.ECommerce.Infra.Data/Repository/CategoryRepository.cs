@@ -15,20 +15,20 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
         }
 
-        public override void Delete(int entityId)
-        {
-            int productCount = this.context.Products.Where(p => p.CategoryID == entityId).ToList().Count();
-            var category = Retrieve(entityId);
+        //public override void Delete(int entityId)
+        //{
+        //    int productCount = this.context.Products.Where(p => p.CategoryID == entityId).Count();
+        //    var category = Retrieve(entityId);
 
-            if (productCount > 0)
-            {
-                throw new SystemException("This category can't be deleted. It will delete the products.");
-            }
+        //    if (productCount > 0)
+        //    {
+        //        throw new SystemException("This category can't be deleted. It will delete the products.");
+        //    }
 
-            this.context.Remove<Category>(category);
-            this.context.SaveChanges();
+        //    this.context.Remove<Category>(category);
+        //    this.context.SaveChanges();
 
-        }
+        //}
         public override Category Retrieve(int entityId)
         {
             var entity = this.context.Categories
