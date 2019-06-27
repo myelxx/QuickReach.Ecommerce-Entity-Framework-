@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.InMemory.Storage.Internal;
 using Microsoft.EntityFrameworkCore;
+using QuickReach.ECommerce.Infra.Data.Test.Utilities;
 
 namespace QuickReach.ECommerce.Infra.Data.Test
 {
@@ -19,16 +20,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Create_WithValidEntity_ShouldCreateNewDatabaseRecord()
         {
             //Arrange
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             var category = new Category();
             var expected = new Product();
@@ -39,23 +31,12 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create category
-                category = new Category
-                {
-                    Name = "Shoes",
-                    Description = "Shoe department"
-                };
+                category = TestHelper.SampleCategory();
                 context.Categories.Add(category);
                 context.SaveChanges();
 
                 //create product
-                expected = new Product
-                {
-                    Name = "Boots",
-                    Description = "Boots for sell",
-                    Price = 1500,
-                    CategoryID = category.ID,
-                    ImgURL = "sample_boots_1.png"
-                };
+                expected = TestHelper.SampleProduct(category.ID);
                 var sut = new ProductRepository(context);
 
                 //Act
@@ -82,11 +63,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Retrieve_WithValidEntityID_ReturnsAValidEntity()
         {
             //Arrange
-            var connectionBuilder = new SqliteConnectionStringBuilder();
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             var category = new Category();
             var expected = new Product();
@@ -97,24 +74,12 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create category
-                category = new Category
-                {
-                    Name = "Shoes",
-                    Description = "Shoe department"
-                };
-
+                category = TestHelper.SampleCategory();
                 context.Categories.Add(category);
                 context.SaveChanges();
 
                 //create product
-                expected = new Product
-                {
-                    Name = "Boots",
-                    Description = "Boots for sell",
-                    Price = 1500,
-                    CategoryID = category.ID,
-                    ImgURL = "sample_boots_1.png"
-                };
+                expected = TestHelper.SampleProduct(category.ID);
 
                 context.SaveChanges();
             }
@@ -150,14 +115,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Retrieve_WithRetrieve_WithNonExistingEntityID_ReturnsNull()
         {
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             using (var context = new ECommerceDbContext(options))
             {
@@ -183,14 +141,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [InlineData(15, 5)]
         public void Retrieve_WithSkipAndCount_ReturnsTheCorrectPage(int skip, int count)
         {
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             var category = new Category();
             var expected = new Product();
@@ -201,12 +152,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create category
-                category = new Category
-                {
-                    Name = "Shoes",
-                    Description = "Shoe department"
-                };
-
+                category = TestHelper.SampleCategory();
                 context.Categories.Add(category);
                 context.SaveChanges();
 
@@ -214,14 +160,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 for (var i = 1; i <= 20; i += 1)
                 {
                     //create product
-                    context.Products.Add(new Product
-                    {
-                        Name = string.Format("Product {0}", i),
-                        Description = string.Format("Description {0}", i),
-                        Price = 1500 + i,
-                        CategoryID = category.ID,
-                        ImgURL = string.Format("sample_product_{0}.png", i)
-                    });
+                    context.Products.Add(TestHelper.SampleProduct(category.ID));
                 }
 
                 context.SaveChanges();
@@ -247,14 +186,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Update_WithValidEntity_ShouldReflectChangesInDatabaseRecord()
         {
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             //to update 
             var expectedName = "Black Boots";
@@ -272,25 +204,13 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create category
-                category = new Category
-                {
-                    Name = "Shoes",
-                    Description = "Shoe department"
-                };
-
+                category = TestHelper.SampleCategory();
                 context.Categories.Add(category);
                 context.SaveChanges();
 
                 // Arrange
                 //create product
-                var entity = new Product
-                {
-                    Name = "Boots",
-                    Description = "Boots for sale",
-                    Price = 1500,
-                    CategoryID = category.ID,
-                    ImgURL = "sample_boots_1.png"
-                };
+                var entity = TestHelper.SampleProduct(category.ID);
                 context.Products.Add(entity);
                 context.SaveChanges();
 
@@ -326,14 +246,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         [Fact]
         public void Delete_WithValidEntity_ShouldDeleteDatabaseRecord()
         {
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             var category = new Category();
             var entity = new Product();
@@ -344,24 +257,13 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create category
-                category = new Category
-                {
-                    Name = "Shoes",
-                    Description = "Shoe department"
-                };
+                category = TestHelper.SampleCategory();
 
                 context.Categories.Add(category);
                 context.SaveChanges();
 
                 //create product
-                entity = new Product
-                {
-                    Name = "Boots",
-                    Description = "Boots for sale",
-                    Price = 522,
-                    CategoryID = category.ID,
-                    ImgURL = "sample.png"
-                };
+                entity = TestHelper.SampleProduct(category.ID);
 
                 // Arrange
                 context.Products.Add(entity);
@@ -387,16 +289,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         public void Create_WithValidProductAndWithoutExistingCategory_ShouldThrowException()
         {
             //Arrange
-            var connectionBuilder = new SqliteConnectionStringBuilder()
-            {
-                DataSource = ":memory:"
-            };
-
-            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
-
-            var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-                        .UseSqlite(connection)
-                        .Options;
+            var options = TestHelper.Sqlite();
 
             var expected = new Product();
 
@@ -406,14 +299,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.EnsureCreated();
 
                 //create product
-                expected = new Product
-                {
-                    Name = "Boots",
-                    Description = "Boots for sell",
-                    Price = 1500,
-                    CategoryID = -1,
-                    ImgURL = "sample_boots_1.png"
-                };
+                expected = TestHelper.SampleProduct(-1);
                 var sut = new ProductRepository(context);
 
                 //Act & assert
