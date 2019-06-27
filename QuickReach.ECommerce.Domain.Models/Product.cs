@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +8,6 @@ namespace QuickReach.ECommerce.Domain.Models
     [Table("Product")]
     public class Product : EntityBase
     {
-
         [Required]
         [MaxLength(40)]
         public string Name { get; set; }
@@ -19,15 +19,16 @@ namespace QuickReach.ECommerce.Domain.Models
         [Required]
         public decimal Price { get; set; }
 
-        [Required]
-        public int CategoryID { get; set; }
-
-        public Category Category { get; set; }
+        //[Required]
+        //public int CategoryID { get; set; }
+        //public Category Category { get; set; }
 
         [Required]
         public string ImgURL { get; set; }
 
         public bool isActive { get; set; }
+
+        public IEnumerable<ProductCategory> ProductCategories { get; set; }
 
     }
 }

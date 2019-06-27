@@ -33,7 +33,7 @@ namespace QuickReach.ECommerce.Infra.Data
         public virtual TEntity Retrieve(int entityId)
         {
             var entity = this.context.Set<TEntity>()
-                                     //.AsNoTracking()
+                                     .AsNoTracking()
                                      .FirstOrDefault(c => c.ID == entityId);
             return entity;
         }

@@ -42,7 +42,6 @@ namespace QuickReach.ECommerce.Infra.Data.Test.Utilities
                 Name = "Boots",
                 Description = "Boots for sell",
                 Price = 1500,
-                CategoryID = categoryId,
                 ImgURL = "sample_boots_1.png"
             };
 

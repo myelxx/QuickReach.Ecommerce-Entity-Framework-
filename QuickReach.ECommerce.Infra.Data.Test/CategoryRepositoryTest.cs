@@ -234,46 +234,46 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         }
         #endregion
 
-        #region Delete Throws Exception
-        [Fact]
-        public void Delete_WithValidCategoryAndProduct_ShouldThrowException()
-        {
-            var options = TestHelper.Sqlite();
+        //#region Delete Throws Exception
+        //[Fact]
+        //public void Delete_WithValidCategoryAndProduct_ShouldThrowException()
+        //{
+        //    var options = TestHelper.Sqlite();
 
-            var entity = new Category();
-            var product = new Product();
+        //    var entity = new Category();
+        //    var product = new Product();
 
-            using (var context = new ECommerceDbContext(options))
-            {
-                context.Database.OpenConnection();
-                context.Database.EnsureCreated();
+        //    using (var context = new ECommerceDbContext(options))
+        //    {
+        //        context.Database.OpenConnection();
+        //        context.Database.EnsureCreated();
 
-                // Arrange
+        //        // Arrange
                 
-                //create category
-                entity = TestHelper.SampleCategory();
-                context.Categories.Add(entity);
-                context.SaveChanges();
+        //        //create category
+        //        entity = TestHelper.SampleCategory();
+        //        context.Categories.Add(entity);
+        //        context.SaveChanges();
 
-                //create product
-                product = TestHelper.SampleProduct(entity.ID);
+        //        //create product
+        //        product = TestHelper.SampleProduct(entity.ID);
 
-                context.Products.Add(product);
-                context.SaveChanges();
-            }
+        //        context.Products.Add(product);
+        //        context.SaveChanges();
+        //    }
 
-            using (var context = new ECommerceDbContext(options))
-            {
-                var sut = new CategoryRepository(context);
+        //    using (var context = new ECommerceDbContext(options))
+        //    {
+        //        var sut = new CategoryRepository(context);
 
-                //Act & Assert
-                entity = context.Categories.Find(entity.ID);
-                Assert.Throws<InvalidOperationException>(() => sut.Delete(entity.ID));
-            }
+        //        //Act & Assert
+        //        entity = context.Categories.Find(entity.ID);
+        //        Assert.Throws<InvalidOperationException>(() => sut.Delete(entity.ID));
+        //    }
 
 
-        }
-        #endregion
+        //}
+        //#endregion
 
     }
 }

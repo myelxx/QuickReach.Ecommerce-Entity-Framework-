@@ -52,7 +52,6 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 Assert.Equal(expected.Name, actual.Name);
                 Assert.Equal(expected.Description, actual.Description);
                 Assert.Equal(expected.Price, actual.Price);
-                Assert.Equal(expected.CategoryID, actual.CategoryID);
                 Assert.Equal(expected.ImgURL, actual.ImgURL);
             }
         }
@@ -105,7 +104,6 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 Assert.Equal(expected.Name, actual.Name);
                 Assert.Equal(expected.Description, actual.Description);
                 Assert.Equal(expected.Price, actual.Price);
-                Assert.Equal(expected.CategoryID, actual.CategoryID);
                 Assert.Equal(expected.ImgURL, actual.ImgURL);
             }
         }
@@ -284,29 +282,29 @@ namespace QuickReach.ECommerce.Infra.Data.Test
         }
         #endregion
 
-        #region Create Category Throws Exception
-        [Fact]
-        public void Create_WithValidProductAndWithoutExistingCategory_ShouldThrowException()
-        {
-            //Arrange
-            var options = TestHelper.Sqlite();
+        //#region Create Category Throws Exception
+        //[Fact]
+        //public void Create_WithValidProductAndWithoutExistingCategory_ShouldThrowException()
+        //{
+        //    //Arrange
+        //    var options = TestHelper.Sqlite();
 
-            var expected = new Product();
+        //    var expected = new Product();
 
-            using (var context = new ECommerceDbContext(options))
-            {
-                context.Database.OpenConnection();
-                context.Database.EnsureCreated();
+        //    using (var context = new ECommerceDbContext(options))
+        //    {
+        //        context.Database.OpenConnection();
+        //        context.Database.EnsureCreated();
 
-                //create product
-                expected = TestHelper.SampleProduct(-1);
-                var sut = new ProductRepository(context);
+        //        //create product
+        //        expected = TestHelper.SampleProduct(-1);
+        //        var sut = new ProductRepository(context);
 
-                //Act & assert
-                Assert.Throws<DbUpdateException>(() => sut.Create(expected));
-            }
+        //        //Act & assert
+        //        Assert.Throws<DbUpdateException>(() => sut.Create(expected));
+        //    }
 
-        }
-        #endregion
+        //}
+        //#endregion
     }
 }

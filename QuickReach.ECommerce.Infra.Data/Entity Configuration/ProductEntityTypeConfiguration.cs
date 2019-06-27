@@ -15,9 +15,9 @@ namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
                    .IsRequired()
                    .ValueGeneratedOnAdd();
 
-            builder.HasOne(c => c.Category)
-                   .WithMany(p => p.Products)
-                   .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(c => c.Category)
+            //       .WithMany(p => p.Products)
+            //       .OnDelete(DeleteBehavior.Restrict);
 
 
 
