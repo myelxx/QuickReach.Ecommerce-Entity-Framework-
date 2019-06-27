@@ -27,6 +27,14 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(products);
         }
 
+        //GET api/values/1
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            var products = this.repository.Retrieve(id);
+            return Ok(products);
+        }
+
         //CREATE
         [HttpPost]
         public IActionResult Post([FromBody] Product newProduct)

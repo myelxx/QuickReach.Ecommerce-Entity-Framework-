@@ -39,6 +39,19 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 expected = TestHelper.SampleProduct(category.ID);
                 var sut = new ProductRepository(context);
 
+                //add product category to product instance
+                ProductCategory productCategory = new ProductCategory
+                {
+                    CategoryID = category.ID,
+                    Category = category,
+                    ProductID = expected.ID,
+                    Product = expected
+                };
+
+                List<ProductCategory> productCategoryList = new List<ProductCategory>();
+                productCategoryList.Add(productCategory);
+                expected.ProductCategories = productCategoryList;
+
                 //Act
                 sut.Create(expected);
             }
