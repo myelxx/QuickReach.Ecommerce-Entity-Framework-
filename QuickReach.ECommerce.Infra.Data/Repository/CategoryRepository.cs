@@ -15,27 +15,27 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
         }
 
-        //public override void Delete(int entityId)
+        #region Create Product Category
+        //public ProductCategory CreateProductCategory(int categoryID, int productID)
         //{
-        //    int productCount = this.context.Products.Where(p => p.CategoryID == entityId).Count();
-        //    var category = Retrieve(entityId);
+            
 
-        //    if (productCount > 0)
+        //    var productCategory = new ProductCategory()
         //    {
-        //        throw new SystemException("This category can't be deleted. It will delete the products.");
-        //    }
+        //        CategoryID = categoryID,
+        //        ProductID = productID
+        //    };
 
-        //    this.context.Remove<Category>(category);
+
+        //    this.context.Add(productCategory);
         //    this.context.SaveChanges();
-
+        //    return productCategory;
         //}
+        #endregion
+
+
         public override Category Retrieve(int entityId)
         {
-            //var entity = this.context.Categories
-            //             .AsNoTracking()
-            //             .Include(c => c.Products)
-            //             .Where(c => c.ID == entityId)
-            //             .FirstOrDefault();
 
             var entity = this.context.Categories
                              .Include(c => c.ProductCategories)
@@ -58,5 +58,7 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
             return result;
         }
+
+       
     }
 }

@@ -46,7 +46,7 @@ namespace QuickReach.ECommerce.API.Controllers
 
             this.repository.Create(newProduct);
 
-            return CreatedAtAction(nameof(this.Get), new { id = newProduct }, newProduct);
+            return CreatedAtAction(nameof(this.Get), new { id = newProduct.ID }, newProduct);
         }
 
         //UPDATE

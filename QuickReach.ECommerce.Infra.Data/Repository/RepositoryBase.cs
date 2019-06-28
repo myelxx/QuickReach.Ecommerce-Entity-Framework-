@@ -15,6 +15,8 @@ namespace QuickReach.ECommerce.Infra.Data
         {
             this.context = context;
         }
+
+
         public virtual TEntity Create(TEntity newEntity)
         {
             this.context.Set<TEntity>() //create dbset for the generic entity
