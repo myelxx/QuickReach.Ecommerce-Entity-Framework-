@@ -14,7 +14,6 @@ namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
             builder.Property(s => s.ID)
                    .IsRequired()
                    .ValueGeneratedOnAdd();
-
         }
 
     }

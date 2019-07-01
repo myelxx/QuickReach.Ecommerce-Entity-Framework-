@@ -18,7 +18,7 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
         #region Create Product Category
         //public ProductCategory CreateProductCategory(int categoryID, int productID)
         //{
-            
+
 
         //    var productCategory = new ProductCategory()
         //    {
@@ -32,8 +32,15 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
         //    return productCategory;
         //}
         #endregion
+        public ProductCategory GetByCategory(int categoryID)
+        {
+            //var products = from p in this.context.Products
+            //               .AsNoTracking()
+            //               .Include(p => p.ProductCategories
+            //               .Where(c => c.CategoryID == categoryID));
 
-
+            return null;
+        }
         public override Category Retrieve(int entityId)
         {
 

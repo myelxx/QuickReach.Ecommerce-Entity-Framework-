@@ -18,8 +18,6 @@ namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
             //builder.HasMany(c => c.Products)
             //       .WithOne(c => c.Category)
             //       .OnDelete(DeleteBehavior.Restrict);
-
-
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using QuickReach.ECommerce.Domain;
 using QuickReach.ECommerce.Domain.Models;
+using QuickReach.ECommerce.Infra.Data;
 
 namespace QuickReach.ECommerce.API.Controllers
 {
@@ -14,9 +15,13 @@ namespace QuickReach.ECommerce.API.Controllers
     public class SuppliersController : ControllerBase
     {
         private readonly ISupplierRepository repository;
-        public SuppliersController(ISupplierRepository repository)
+        private readonly IProductRepository productRepo;
+        private readonly ECommerceDbContext context;
+        public SuppliersController(ISupplierRepository repository, IProductRepository productRepo, ECommerceDbContext context)
         {
             this.repository = repository;
+            this.productRepo = productRepo;
+            this.context = context;
         }
 
         //RETRIEVE
@@ -27,7 +32,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(supplier);
         }
 
-        //GET api/values/1
+        //GET 
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -47,6 +52,60 @@ namespace QuickReach.ECommerce.API.Controllers
             this.repository.Create(newSupplier);
 
             return CreatedAtAction(nameof(this.Get), new { id = newSupplier }, newSupplier);
+        }
+
+        //CREATE PRODUCT SUPPLIER
+        [HttpPut("{id}/products")]
+        public IActionResult AddSupplierProduct(int id, [FromBody] ProductSupplier entity)
+        {
+            var supplier = repository.Retrieve(id);
+            var product = productRepo.Retrieve(entity.ProductID);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if(supplier == null)
+            {
+                return NotFound();
+            }
+
+            if(product == null)
+            {
+                return NotFound();
+            }
+
+            supplier.AddProduct(entity);
+            repository.Update(id, supplier);
+
+            return Ok(supplier);
+        }
+
+        //REMOVE SUPPLIER CATEGORY
+        [HttpPut("{id}/products/{productId}")]
+        public IActionResult DeleteSupplierProduct(int id, int productId)
+        {
+            var supplier = repository.Retrieve(id);
+            var product = productRepo.Retrieve(productId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (supplier == null)
+            {
+                return NotFound();
+            }
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            supplier.RemoveProduct(productId);
+            repository.Update(id, supplier);
+            return Ok();
         }
 
         //UPDATE
@@ -70,5 +129,6 @@ namespace QuickReach.ECommerce.API.Controllers
             this.repository.Delete(id);
             return Ok();
         }
+
     }
 }

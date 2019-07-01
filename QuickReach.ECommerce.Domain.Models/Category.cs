@@ -38,6 +38,7 @@ namespace QuickReach.ECommerce.Domain.Models
             {
                 throw new ArgumentException("Child category ID must not be the same as the parent category id");
             }
+
             // check if category id exists
             // check if category id is not a child yet
 

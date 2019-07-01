@@ -19,7 +19,7 @@ namespace QuickReach.ECommerce.API.Controllers
             this.repository = repository;
         }
 
-        //RETRIEVE
+        //RETRIEVE PRODUCT
         [HttpGet]
         public IActionResult Get(string search="", int skip=0, int count = 10)
         {
@@ -27,7 +27,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(products);
         }
 
-        //GET api/values/1
+        //GET PRODUCT
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -35,7 +35,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(products);
         }
 
-        //CREATE
+        //CREATE PRODUCT
         [HttpPost]
         public IActionResult Post([FromBody] Product newProduct)
         {
@@ -49,7 +49,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return CreatedAtAction(nameof(this.Get), new { id = newProduct.ID }, newProduct);
         }
 
-        //UPDATE
+        //UPDATE PRODUCT
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Product newProduct)
         {
@@ -63,12 +63,13 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(repository);
         }
 
-        //DELETE
+        //DELETE PRODUCT
         [HttpDelete("{id}")]
         public IActionResult Delete (int id)
         {
             this.repository.Delete(id);
             return Ok();
         }
+
     }
 }

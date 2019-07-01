@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using QuickReach.ECommerce.API.ViewModel;
 using QuickReach.ECommerce.Domain;
 using QuickReach.ECommerce.Domain.Models;
 using QuickReach.ECommerce.Infra.Data;
@@ -18,20 +22,22 @@ namespace QuickReach.ECommerce.API.Controllers
     {
         private readonly ICategoryRepository repository;
         private readonly IProductRepository productRepo;
-        public CategoriesController(ICategoryRepository repository, IProductRepository productRepo)
+        private readonly ECommerceDbContext context;
+        public CategoriesController(ICategoryRepository repository, IProductRepository productRepo, ECommerceDbContext context)
         {
             this.repository = repository;
             this.productRepo = productRepo;
+            this.context = context;
         }
 
         [HttpGet]
-        public IActionResult Get(string search="", int skip = 0, int count = 10)
+        public IActionResult Get(string search = "", int skip = 0, int count = 10)
         {
             var categories = repository.Retrieve(search, skip, count);
             return Ok(categories);
         }
 
-        //GET api/values/1
+        //GET Category
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -39,7 +45,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok(category);
         }
 
-        //CREATE category
+        //CREATE Category
         [HttpPost]
         public IActionResult Post([FromBody] Category newCategory)
         {
@@ -53,6 +59,44 @@ namespace QuickReach.ECommerce.API.Controllers
             return CreatedAtAction(nameof(this.Get), new { id = newCategory.ID }, newCategory);
         }
 
+        //Retrieve -> GetProductsByCategory
+        [HttpGet("{id}/products")]
+        public IActionResult GetProductsByCategory(int id)
+        {
+            var connectionString = "Server=.;Database=QuickReachDb;Integrated Security=true;";
+            var connection = new SqlConnection(connectionString);
+            var query = @"SELECT p.ID,
+                               pc.ProductID, 
+                               pc.CategoryID,
+                               p.Name, 
+                               p.Description,
+                               p.Price,
+                               p.ImgUrl
+                        FROM Product p INNER JOIN ProductCategory pc ON p.ID = pc.ProductID
+                        Where pc.CategoryID = @categoryId";
+
+            var categories = connection.Query<SearchItemViewModel>(query, new { categoryId = id })
+                                       .ToList();
+
+            return Ok(categories);
+
+            //var parameter = new SqlParameter("@categoryid", id);
+            //var result = this.context.Query<SearchItemViewModel>()
+            //                         .FromSql(@"SELECT pc.CategoryID, 
+            //                                           pc.ProductID, 
+            //                                           p.Name, 
+            //                                           p.Description, 
+            //                                           p.Price, 
+            //                                           p.ImgURL 
+            //                                    FROM Product p
+            //                                    INNER JOIN ProductCategory pc ON p.ID = pc.ProductID 
+            //                                    WHERE pc.CategoryID = @categoryid", parameter)
+            //                         .AsNoTracking()
+            //                         .ToList();
+            //return Ok(result);
+        }
+
+        //CREATE Product Category
         [HttpPut("{id}/products")]
         public IActionResult AddCategoryProduct(int id, [FromBody] ProductCategory entity)
         {
@@ -81,7 +125,7 @@ namespace QuickReach.ECommerce.API.Controllers
 
         }
 
-        //Remove product category
+        //Remove Product Category
         [HttpPut("{id}/products/{productId}")]
         public IActionResult DeleteCategoryProduct(int id, int productId)
         {
@@ -107,7 +151,7 @@ namespace QuickReach.ECommerce.API.Controllers
             return Ok();
         }
 
-        //Add categoroy roll up 
+        //Add Categoroy Roll up 
         [HttpPut("{id}/sub")]
         public IActionResult AddSubCategories(int id, [FromBody] Category child)
         {
