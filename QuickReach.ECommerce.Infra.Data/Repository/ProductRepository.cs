@@ -14,21 +14,6 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
         }
 
-        //public override Product Create(Product newEntity)
-        //{
-        //    this.context.Add(newEntity);
-
-        //    ProductCategory productCategory = new ProductCategory()
-        //    {
-        //        CategoryID = 1,
-        //        ProductID = newEntity.ID
-        //    };
-
-        //    this.context.ProductCategory.Add(productCategory);
-        //    this.context.SaveChanges(); //to reflect in database
-        //    return newEntity;
-        //}
-
         public IEnumerable<Product> Retrieve(string search = "", int skip = 0, int count = 10)
         {
             var result = this.context.Products
