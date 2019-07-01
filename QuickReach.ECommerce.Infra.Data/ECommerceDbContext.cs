@@ -44,7 +44,7 @@ namespace QuickReach.ECommerce.Infra.Data
         }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<Supplier> Supplier { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
         //public DbSet<ProductCategory> ProductCategory { get; set; }
 
     }

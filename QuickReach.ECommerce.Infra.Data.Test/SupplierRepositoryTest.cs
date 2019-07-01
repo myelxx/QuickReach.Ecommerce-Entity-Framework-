@@ -46,7 +46,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
             using(var context = new ECommerceDbContext(options))
             {
-                var actual = context.Supplier.Find(expected.ID);
+                var actual = context.Suppliers.Find(expected.ID);
 
                 //Arrange
                 Assert.NotNull(actual);
@@ -82,7 +82,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
 
-                context.Supplier.Add(expected);
+                context.Suppliers.Add(expected);
                 context.SaveChanges();
             }
 
@@ -152,7 +152,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 // Arrange
                 for (var i = 1; i <= 20; i += 1)
                 {
-                    context.Supplier.Add( new Supplier {
+                    context.Suppliers.Add( new Supplier {
                         Name = string.Format("Supplier #{0}", i),
                         Description = string.Format("Description #{0}", i)
                     });
@@ -208,7 +208,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                     Description = "Active shoe supplier "
                 };
 
-                context.Supplier.Add(entity);
+                context.Suppliers.Add(entity);
                 context.SaveChanges();
 
                 expectedId = entity.ID;
@@ -217,7 +217,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
             using (var context = new ECommerceDbContext(options))
             {
                 // Arrange
-                var entity = context.Supplier.Find(expectedId);
+                var entity = context.Suppliers.Find(expectedId);
 
                 entity.Name = expectedName;
                 entity.Description = expectedDescription;
@@ -226,7 +226,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 // Act
                 sut.Update(entity.ID, entity);
-                var actual = context.Supplier.Find(entity.ID);
+                var actual = context.Suppliers.Find(entity.ID);
 
                 // Assert
                 Assert.Equal(expectedName, actual.Name);
@@ -263,7 +263,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
                 context.Database.OpenConnection();
                 context.Database.EnsureCreated();
 
-                context.Supplier.Add(entity);
+                context.Suppliers.Add(entity);
                 context.SaveChanges();
             }
 
@@ -273,7 +273,7 @@ namespace QuickReach.ECommerce.Infra.Data.Test
 
                 // Act
                 sut.Delete(entity.ID);
-                entity = context.Supplier.Find(entity.ID);
+                entity = context.Suppliers.Find(entity.ID);
 
                 // Assert
                 Assert.Null(entity);

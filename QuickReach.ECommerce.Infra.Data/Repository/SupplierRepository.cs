@@ -17,7 +17,7 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
         public IEnumerable<Supplier> Retrieve(string search = "", int skip = 0, int count = 10)
         {
-            var result = this.context.Supplier
+            var result = this.context.Suppliers
                         .Where(c => c.Name.Contains(search)
                                || c.Description.Contains(search))
                        .Skip(skip)
@@ -29,7 +29,7 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
 
         public override Supplier Retrieve(int entityId)
         {
-            var entity = this.context.Supplier
+            var entity = this.context.Suppliers
                              .Include(s => s.ProductSuppliers)
                              .Where(c => c.ID == entityId)
                              .FirstOrDefault();
