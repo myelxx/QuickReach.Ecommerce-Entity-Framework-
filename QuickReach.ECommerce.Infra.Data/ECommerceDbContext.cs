@@ -30,6 +30,9 @@ namespace QuickReach.ECommerce.Infra.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfiguration(new ManufacturerEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductManufacturerEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new CustomerEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SupplierEntityTypeConfiguration());
@@ -46,7 +49,9 @@ namespace QuickReach.ECommerce.Infra.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
-        public DbSet<Cart> Cart { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Manufacturer> Manufacturers { get; set; }
 
     }
 }

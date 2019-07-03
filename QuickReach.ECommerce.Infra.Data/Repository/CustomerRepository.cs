@@ -2,16 +2,14 @@
 using QuickReach.ECommerce.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace QuickReach.ECommerce.Infra.Data.Repository
 {
-    public class CartRepository : RepositoryBase<Cart>, ICartRepository
+    public class CustomerRepository : RepositoryBase<Customer>, ICustomerRepository
     {
-        public CartRepository(ECommerceDbContext context) : base(context)
+        public CustomerRepository(ECommerceDbContext context) : base(context)
         {
         }
     }
-
 }

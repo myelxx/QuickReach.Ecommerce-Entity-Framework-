@@ -32,6 +32,8 @@ namespace QuickReach.ECommerce.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ECommerceDbContext>();
+            services.AddTransient<ICustomerRepository, uCustomerRepository>();
+            services.AddTransient<ICartRepository, CartRepository>();
             services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IProductRepository, ProductRepository>();
             services.AddTransient<ISupplierRepository, SupplierRepository>();

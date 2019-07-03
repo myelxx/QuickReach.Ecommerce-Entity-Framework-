@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace QuickReach.ECommerce.Domain.Models
 {
+    [Table("Customer")]
     public class Customer : EntityBase
     {
+        public Customer()
+        {
+            Carts = new List<Cart>();
+        }
+
         [Required]
         public string CardNumber { get; set; }
         [Required]
@@ -31,5 +38,6 @@ namespace QuickReach.ECommerce.Domain.Models
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
+        public List<Cart> Carts { get; set; }
     }
 }

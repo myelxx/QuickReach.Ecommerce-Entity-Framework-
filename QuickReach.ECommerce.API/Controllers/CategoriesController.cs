@@ -81,20 +81,26 @@ namespace QuickReach.ECommerce.API.Controllers
 
             return Ok(categories);
 
-            //var parameter = new SqlParameter("@categoryid", id);
-            //var result = this.context.Query<SearchItemViewModel>()
-            //                         .FromSql(@"SELECT pc.CategoryID, 
-            //                                           pc.ProductID, 
-            //                                           p.Name, 
-            //                                           p.Description, 
-            //                                           p.Price, 
-            //                                           p.ImgURL 
-            //                                    FROM Product p
-            //                                    INNER JOIN ProductCategory pc ON p.ID = pc.ProductID 
-            //                                    WHERE pc.CategoryID = @categoryid", parameter)
-            //                         .AsNoTracking()
-            //                         .ToList();
-            //return Ok(result);
+            //var connectionString = "Server=.;Database=QuickReachDb;Integrated Security=true;";
+            //var query = @"SELECT p.ID,
+            //                   pc.ProductID, 
+            //                   pc.CategoryID,
+            //                   p.Name, 
+            //                   p.Description,
+            //                   p.Price,
+            //                   p.ImgUrl
+            //            FROM Product p INNER JOIN ProductCategory pc ON p.ID = pc.ProductID
+            //            Where pc.CategoryID = @categoryId";
+
+            //var categories = new List<SearchItemViewModel>();
+            //using (var connection = new SqlConnection(connectionString))
+            //{
+            //    connection.Open();
+            //    categories = connection.Query<SearchItemViewModel>(query, new { categoryId = id })
+            //                               .ToList();
+            //    connection.Close();
+            //}
+
         }
 
         //CREATE Product Category
