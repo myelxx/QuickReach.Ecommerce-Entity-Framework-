@@ -6,11 +6,11 @@ using System.Text;
 
 namespace QuickReach.ECommerce.Domain.Models
 {
-    [Table("CartItem")]
-    public class CartItem : IValidatableObject //child
+    [Table("OrderItem")]
+    public class OrderItem : IValidatableObject //child
     {
         public int Id { get; set; }
-        public Cart Cart { get; set; }
+        public Order Order { get; set; }
         public string ProductId { get; set; }
         public string ProductName { get; set; }
         public decimal UnitPrice { get; set; }
@@ -20,7 +20,7 @@ namespace QuickReach.ECommerce.Domain.Models
         {
             var results = new List<ValidationResult>();
 
-            if(Quantity < 1)
+            if (Quantity < 1)
             {
                 results.Add(new ValidationResult("Invalud number of units"));
             }

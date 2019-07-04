@@ -5,9 +5,8 @@ using System.Text;
 
 namespace QuickReach.ECommerce.Domain
 {
-    public interface ICartRepository : IRepository<Cart>
+    public interface IOrderRepository : IRepository<Order>
     {
-        IEnumerable<Cart> Retrieve(string search = "", int skip = 0, int count = 10);
-
+        IEnumerable<Order> Retrieve(string search = "", int skip = 0, int count = 10);
     }
 }

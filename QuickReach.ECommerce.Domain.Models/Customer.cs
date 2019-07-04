@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace QuickReach.ECommerce.Domain.Models
@@ -39,5 +40,20 @@ namespace QuickReach.ECommerce.Domain.Models
         [Required]
         public string LastName { get; set; }
         public List<Cart> Carts { get; set; }
+
+        public void AddCart(Cart item)
+        {
+            ((ICollection<Cart>)this.Carts).Add(item);
+        }
+
+        public Cart GetCart(int cartId)
+        {
+            return ((ICollection<Cart>)this.Carts).FirstOrDefault(c => c.ID == cartId);
+        }
+        public void RemoveCart(int cartId)
+        {
+            var cart = this.GetCart(cartId);
+            ((ICollection<Cart>)this.Carts).Remove(cart);
+        }
     }
 }

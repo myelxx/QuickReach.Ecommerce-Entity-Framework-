@@ -11,5 +11,10 @@ namespace QuickReach.ECommerce.Infra.Data.Repository
         public CustomerRepository(ECommerceDbContext context) : base(context)
         {
         }
+
+        public IEnumerable<Customer> Retrieve(string search = "", int skip = 0, int count = 10)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

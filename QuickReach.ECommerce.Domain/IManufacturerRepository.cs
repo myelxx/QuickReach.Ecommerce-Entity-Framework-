@@ -7,5 +7,6 @@ namespace QuickReach.ECommerce.Domain
 {
     public interface IManufacturerRepository : IRepository<Manufacturer>
     {
+        IEnumerable<Manufacturer> Retrieve(string search = "", int skip = 0, int count = 10);
     }
 }

@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuickReach.ECommerce.API.Controllers.Utilities;
 using QuickReach.ECommerce.API.ViewModel;
 using QuickReach.ECommerce.Domain;
 using QuickReach.ECommerce.Domain.Models;
@@ -64,8 +65,7 @@ namespace QuickReach.ECommerce.API.Controllers
         public IActionResult GetProductsByCategory(int id)
         {
 
-            var connectionString = "Server=.;Database=QuickReachDb;Integrated Security=true;";
-            var connection = new SqlConnection(connectionString);
+            var connection = ConnectionHelper.GetConnection();
             var query = @"SELECT p.ID,
                                pc.ProductID, 
                                pc.CategoryID,
@@ -80,26 +80,6 @@ namespace QuickReach.ECommerce.API.Controllers
                                        .ToList();
 
             return Ok(categories);
-
-            //var connectionString = "Server=.;Database=QuickReachDb;Integrated Security=true;";
-            //var query = @"SELECT p.ID,
-            //                   pc.ProductID, 
-            //                   pc.CategoryID,
-            //                   p.Name, 
-            //                   p.Description,
-            //                   p.Price,
-            //                   p.ImgUrl
-            //            FROM Product p INNER JOIN ProductCategory pc ON p.ID = pc.ProductID
-            //            Where pc.CategoryID = @categoryId";
-
-            //var categories = new List<SearchItemViewModel>();
-            //using (var connection = new SqlConnection(connectionString))
-            //{
-            //    connection.Open();
-            //    categories = connection.Query<SearchItemViewModel>(query, new { categoryId = id })
-            //                               .ToList();
-            //    connection.Close();
-            //}
 
         }
 

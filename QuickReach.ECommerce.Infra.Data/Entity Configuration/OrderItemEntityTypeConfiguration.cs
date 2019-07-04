@@ -7,19 +7,16 @@ using System.Text;
 
 namespace QuickReach.ECommerce.Infra.Data.Entity_Configuration
 {
-    public class CartEntityTypeConfiguration : IEntityTypeConfiguration<Cart>
+    public class OrderItemEntityTypeConfiguration : IEntityTypeConfiguration<OrderItem>
     {
-        public void Configure(EntityTypeBuilder<Cart> builder)
+        public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
-            builder.Property(c => c.ID)
+            builder.Property(o => o.Id)
                    .IsRequired()
                    .ValueGeneratedOnAdd();
 
-            builder.HasMany(c => c.Items)
-                   .WithOne(ci => ci.Cart)
-                   .HasForeignKey("CartId")
-                   .OnDelete( DeleteBehavior.Cascade);
-
+            builder.HasOne(oi => oi.Order)
+                  .WithMany(o => o.Items);
         }
     }
 }

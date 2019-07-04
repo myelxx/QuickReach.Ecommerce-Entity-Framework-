@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickReach.ECommerce.Infra.Data;
 
 namespace QuickReach.ECommerce.Infra.Data.Migrations
 {
     [DbContext(typeof(ECommerceDbContext))]
-    partial class ECommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190704002537_modify cart entity type conifuguration")]
+    partial class modifycartentitytypeconifuguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,7 +168,7 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CartId");
+                    b.Property<int>("CardId");
 
                     b.Property<int>("CustomerId");
 
@@ -181,9 +183,9 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CartId");
-
                     b.Property<decimal>("OldUnitPrice");
+
+                    b.Property<int?>("OrderID");
 
                     b.Property<string>("ProductId");
 
@@ -195,7 +197,7 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CartId");
+                    b.HasIndex("OrderID");
 
                     b.ToTable("OrderItem");
                 });
@@ -319,7 +321,7 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
                 {
                     b.HasOne("QuickReach.ECommerce.Domain.Models.Order", "Order")
                         .WithMany("Items")
-                        .HasForeignKey("CartId")
+                        .HasForeignKey("OrderID")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 

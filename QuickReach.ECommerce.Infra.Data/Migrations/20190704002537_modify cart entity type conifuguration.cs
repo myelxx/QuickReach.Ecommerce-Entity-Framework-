@@ -2,7 +2,7 @@
 
 namespace QuickReach.ECommerce.Infra.Data.Migrations
 {
-    public partial class addmanufacturerentity : Migration
+    public partial class modifycartentitytypeconifuguration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

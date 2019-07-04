@@ -3,25 +3,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace QuickReach.ECommerce.Infra.Data.Migrations
 {
-    public partial class addedcartconfiguration : Migration
+    public partial class addorderandorderitementity : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Cart",
+                name: "Order",
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    CustomerId = table.Column<int>(nullable: false)
+                    CustomerId = table.Column<int>(nullable: false),
+                    CardId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cart", x => x.ID);
+                    table.PrimaryKey("PK_Order", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
-                name: "CartItem",
+                name: "OrderItem",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -31,32 +32,32 @@ namespace QuickReach.ECommerce.Infra.Data.Migrations
                     UnitPrice = table.Column<decimal>(nullable: false),
                     OldUnitPrice = table.Column<decimal>(nullable: false),
                     Quantity = table.Column<int>(nullable: false),
-                    CartID = table.Column<int>(nullable: true)
+                    OrderID = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CartItem", x => x.Id);
+                    table.PrimaryKey("PK_OrderItem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CartItem_Cart_CartID",
-                        column: x => x.CartID,
-                        principalTable: "Cart",
+                        name: "FK_OrderItem_Order_OrderID",
+                        column: x => x.OrderID,
+                        principalTable: "Order",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItem_CartID",
-                table: "CartItem",
-                column: "CartID");
+                name: "IX_OrderItem_OrderID",
+                table: "OrderItem",
+                column: "OrderID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CartItem");
+                name: "OrderItem");
 
             migrationBuilder.DropTable(
-                name: "Cart");
+                name: "Order");
         }
     }
 }

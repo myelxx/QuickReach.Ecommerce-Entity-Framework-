@@ -7,5 +7,6 @@ namespace QuickReach.ECommerce.Domain
 {
     public interface ICustomerRepository : IRepository<Customer>
     {
+        IEnumerable<Customer> Retrieve(string search = "", int skip = 0, int count = 10);
     }
 }

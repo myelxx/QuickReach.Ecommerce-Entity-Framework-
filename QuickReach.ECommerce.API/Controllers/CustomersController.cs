@@ -15,12 +15,14 @@ namespace QuickReach.ECommerce.API.Controllers
     public class CustomersController : ControllerBase
     {
         private readonly ICustomerRepository repository;
+        //private readonly ICartRepository cartRepo;
         private readonly ECommerceDbContext context;
 
-        public CustomersController(ICustomerRepository repository, ECommerceDbContext context)
+        public CustomersController(ICustomerRepository repository, /*ICartRepository cartRepo,*/ ECommerceDbContext context)
         {
             this.repository = repository;
             this.context = context;
+            //this.cartRepo = cartRepo;
         }
 
         //Retrieve
