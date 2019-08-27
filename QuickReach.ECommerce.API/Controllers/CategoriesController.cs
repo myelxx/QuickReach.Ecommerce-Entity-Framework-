@@ -32,7 +32,7 @@ namespace QuickReach.ECommerce.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get(string search = "", int skip = 0, int count = 10)
+        public IActionResult Get(string search = "", int skip = 0, int count = 100)
         {
             var categories = repository.Retrieve(search, skip, count);
             return Ok(categories);
@@ -44,6 +44,24 @@ namespace QuickReach.ECommerce.API.Controllers
         {
             var category = this.repository.Retrieve(id);
             return Ok(category);
+        }
+
+        //GET Sub Category
+        [HttpGet("{id}/sub")]
+        public IActionResult GetSub(int id)
+        {
+            var connection = ConnectionHelper.GetConnection();
+            var query = @"SELECT c.ID,
+                               c.Name, 
+                               cr.ParentCategoryID,
+                               CR.ChildCategoryID
+                        FROM Category c INNER JOIN CategoryRollUp cr ON c.ID = cr.ParentCategoryID
+                        Where c.ID = @categoryId";
+
+            var categories = connection.Query<SearchCategoryRollUpViewModel>(query, new { categoryId = id })
+                                       .ToList();
+
+            return Ok(categories);
         }
 
         //CREATE Category
