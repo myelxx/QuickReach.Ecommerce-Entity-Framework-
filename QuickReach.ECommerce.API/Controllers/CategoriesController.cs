@@ -51,11 +51,11 @@ namespace QuickReach.ECommerce.API.Controllers
         public IActionResult GetSub(int id)
         {
             var connection = ConnectionHelper.GetConnection();
-            var query = @"SELECT c.ID,
-                               c.Name, 
-                               cr.ParentCategoryID,
-                               CR.ChildCategoryID
-                        FROM Category c INNER JOIN CategoryRollUp cr ON c.ID = cr.ParentCategoryID
+            var query = @"SELECT cr.ParentCategoryID, c.Name as ParentName, cr.ChildCategoryID, c1.Name as ChildName
+                        FROM Category c 
+                        INNER JOIN CategoryRollUp cr ON c.ID = cr.ParentCategoryID
+                        INNER JOIN Category c1 ON c1.ID = cr.ChildCategoryID
+                        INNER JOIN Category p1 ON p1.ID = cr.ParentCategoryID
                         Where c.ID = @categoryId";
 
             var categories = connection.Query<SearchCategoryRollUpViewModel>(query, new { categoryId = id })
@@ -86,12 +86,15 @@ namespace QuickReach.ECommerce.API.Controllers
             var connection = ConnectionHelper.GetConnection();
             var query = @"SELECT p.ID,
                                pc.ProductID, 
+                               p.Name as ProductName, 
                                pc.CategoryID,
-                               p.Name, 
+                               c.Name as CategoryName, 
                                p.Description,
                                p.Price,
                                p.ImgUrl
-                        FROM Product p INNER JOIN ProductCategory pc ON p.ID = pc.ProductID
+                        FROM Product p 
+						INNER JOIN ProductCategory pc ON p.ID = pc.ProductID
+						INNER JOIN Category c ON c.ID = pc.CategoryID
                         Where pc.CategoryID = @categoryId";
 
             var categories = connection.Query<SearchItemViewModel>(query, new { categoryId = id })
@@ -231,5 +234,6 @@ namespace QuickReach.ECommerce.API.Controllers
             this.repository.Delete(id);
             return Ok();
         }
+
     }
 }

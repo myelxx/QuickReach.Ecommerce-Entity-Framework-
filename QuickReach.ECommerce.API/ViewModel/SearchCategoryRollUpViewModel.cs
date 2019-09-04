@@ -7,9 +7,9 @@ namespace QuickReach.ECommerce.API.ViewModel
 {
     public class SearchCategoryRollUpViewModel
     {
-        public int ID { get; set; }
-        public string Name { get; set; }
         public int ParentCategoryID { get; set; }
+        public string ParentName { get; set; }
         public int ChildCategoryID { get; set; }
+        public string ChildName { get; set; }
     }
 }
